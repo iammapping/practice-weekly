@@ -1,0 +1,31 @@
+{
+  "name": "practice-weekly",
+  "version": "1.0.0",
+  "description": "good good practice, week week up.",
+  "scripts": {
+    "lint": "eslint --ext .js ./",
+    "test": "mocha **/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iammapping/practice-weekly.git"
+  },
+  "author": "iammapping <meibing_240@126.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iammapping/practice-weekly/issues"
+  },
+  "homepage": "https://github.com/iammapping/practice-weekly#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-config-prettier": "^3.0.1",
+    "eslint-plugin-compat": "^3.1.1",
+    "eslint-plugin-import": "^2.17.2",
+    "mocha": "^6.1.4"
+  },
+  "dependencies": {
+
+  }
+}
