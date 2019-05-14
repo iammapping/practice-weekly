@@ -1,3 +1,5 @@
+const _ = require('lodash');
+
 /**
  * 按条件过滤传入的集合
  *
@@ -22,5 +24,5 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
-
+  return _.filter(collection, predicate);
 };
