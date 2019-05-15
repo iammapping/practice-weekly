@@ -40,7 +40,7 @@ module.exports = function filter(collection, predicate) {
   }
 
   if (typeof(predicate) === 'object') {
-    return col.filter(obj => Object.keys(predicate).every(key => obj[key] == predicate[key]));
+    return col.filter(obj => Object.keys(predicate).every(key => obj[key] === predicate[key]));
   }
 
   return [];
