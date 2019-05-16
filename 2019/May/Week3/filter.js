@@ -45,3 +45,47 @@ module.exports = function filter(collection, predicate) {
 
   return [];
 };
+
+/**
+ * @param {Array|Object} col
+ * @param {Function} callback
+ * @return {Array}
+ */
+function colFilter(col, callback) {
+  if (Array.isArray(col)) {
+    return col.filter(callback);
+  }
+
+  if (typeof(col) === 'object') {
+    const result = [];
+    for (const key in col) {
+      if (callback(col[key])) {
+        result.push(col[key]);
+      }
+    }
+    return result;
+  }
+
+  return [];
+}
+
+// filter版本2，性能优化, 当collection为object时使用for...in，不使用Object.values将其转为数组
+module.exports.filter = function filter(collection, predicate) {
+  if (!collection || typeof collection !== 'object' && !Array.isArray(collection) || !predicate) {
+    return [];
+  }
+
+  if (typeof(predicate) === 'string') {
+    return colFilter(collection, obj => obj[predicate]);
+  }
+
+  if (typeof(predicate) === 'function') {
+    return colFilter(collection, obj => predicate(obj));
+  }
+
+  if (typeof(predicate) === 'object') {
+    return colFilter(collection, obj => Object.keys(predicate).every(key => obj[key] === predicate[key]));
+  }
+
+  return [];
+}
