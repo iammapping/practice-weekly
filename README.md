@@ -13,6 +13,22 @@ good good practice, week week up.
 3. 向本项目发起 **pull request**，收到后会自动触发 Travis CI 检查，如检查不通过请自行修改代码直到通过为止，我在 CI 通过后会 review 你的代码并给出评价。
 
 
+### 如何与本项目保持更新
+
+参见：[syncing a fork](https://help.github.com/en/articles/syncing-a-fork)
+
+```
+# 获取本项目更新到你本地
+$ git fetch upstream
+
+# 将本地切到 master 分支
+$ git checkout master
+
+# 将本项目 master 合并到你本地的 master
+$ git merge upstream/master
+```
+
+
 ### 关于选题
 
 * 选题方向不固定
