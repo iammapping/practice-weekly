@@ -22,5 +22,48 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
+    if(!collection || !(typeof collection === 'object' || Array.isArray(collection))) { 
+        return []; 
+    }
 
+    //convert to array
+    let coll = [];
+    if(typeof collection === 'object') {
+        for(const key in collection) {
+            coll.push(collection[key]);
+        }
+    }else {
+        coll = collection;
+    }
+
+    if(coll.length == 0) { return []; }
+
+    //filter
+    let ct = typeof predicate;
+    if(ct == 'function') {
+        return coll.filter((o) => { 
+            return predicate(o); 
+        });
+    }
+
+    if(ct == 'object') { //&& Object.keys(predicate).length > 0
+        if(Object.keys(predicate).length == 0) { //空对象即不过滤，直接返回
+            return coll;
+        }
+
+        return coll.filter((o) => {
+            let keys = Object.keys(predicate);
+            return keys.every((k) => { 
+                return o[k] == predicate[k]; 
+            });
+        });
+    }
+    
+    if(ct == 'string' && predicate != '') {
+        return coll.filter((o) => {
+            return o[predicate];
+        });
+    }
+    
+    return [];
 };
