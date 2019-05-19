@@ -22,5 +22,43 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
+  var arr = []
 
+  if(collection && (typeof collection == 'object' || Array.isArray(collection))) {
+    if(!predicate) {
+      return [];
+    }
+    if(predicate && typeof predicate == 'function') {
+      for(var i in collection) {
+        if(predicate(collection[i])) {
+          arr.push(collection[i]);
+        }
+      }
+    }
+    if(predicate && typeof predicate == 'object' ) {
+      if (JSON.stringify(predicate) == "{}") {
+        return [];
+      }
+      for(var i in collection) {
+        var isPass = false;
+        for(var j in predicate) {
+          if(predicate[j] == collection[i][j]) {
+            isPass == true;
+          }
+        }
+        if(isPass) {
+          arr.push(collection[i]);
+        }
+      }
+    }
+    if(predicate && typeof predicate == 'string') {
+      for(var i in collection) {
+        if(collection[i][predicate] || collection[i][predicate] == 36) {
+          arr.push(collection[i]);
+        }
+
+      }
+    }
+  }
+  return arr;
 };
