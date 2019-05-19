@@ -24,34 +24,34 @@
 module.exports = function filter(collection, predicate) {
   const result = [];
 
+  let convertedCollection = collection;
   if(collection && typeof collection === 'object') {
-    collection = Object.values(collection);
+    convertedCollection = Object.values(collection);
   }
 
-  if(Array.isArray(collection)) {
+  if(Array.isArray(convertedCollection)) {
     if(typeof predicate === 'function') {
-      collection.map(predicate).forEach((funcResult, index) => {
+      convertedCollection.map(predicate).forEach((funcResult, index) => {
         if(funcResult) {
-          result.push(collection[index]);
+          result.push(convertedCollection[index]);
         }
       })
     } else if(typeof predicate === 'object') {
-      collection.forEach(item => {
+      convertedCollection.forEach(item => {
         let isMatched = true;
 
-        for(let i in predicate) {
+        Object.keys(predicate).forEach(i => {
           if(i && item[i] !== predicate[i]) {
             isMatched = false;
-            break;
           }
-        }
+        });
 
         if(isMatched) {
           result.push(item);
         }
       })
     } else {
-      collection.forEach(item => {
+      convertedCollection.forEach(item => {
         if(item[predicate]) {
           result.push(item);
         }
