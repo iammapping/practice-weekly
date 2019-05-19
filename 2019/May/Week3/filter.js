@@ -25,28 +25,28 @@ module.exports = function filter(collection, predicate) {
   let result = [];
 
   if (!collection || !predicate) return result;
-  if (typeof collection != 'object') return result;
+  if (typeof collection !== 'object') return result;
 
-  if (typeof collection == 'object') collection = Object.values(collection);
+  const coll = typeof collection === 'object' ? Object.values(collection) : collection;
 
   if (typeof predicate === 'function') {
-    result = collection.filter(item => predicate(item));
+    result = coll.filter(item => predicate(item));
   }
 
   if (typeof predicate === 'object') {
-    collection.forEach(item => {
-      var has = true;
+    coll.forEach(item => {
+      let has = true;
 
-      for (var key in predicate) {
-        if ((item[key] == 'undefined') || (item[key] != predicate[key])) has = false;
-      }
+      Object.keys(predicate).forEach(key => {
+        if ((item[key] === 'undefined') || (item[key] !== predicate[key])) has = false;
+      });
 
       if (has) result.push(item);
     });
   }
 
   if (typeof predicate === 'string') {
-    result = collection.filter(item => item[predicate]);
+    result = coll.filter(item => item[predicate]);
   }
 
   return result;
