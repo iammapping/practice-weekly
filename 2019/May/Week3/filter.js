@@ -22,5 +22,38 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
+  const result = [];
 
+  if (!collection || !predicate) return result;
+  if (typeof collection != 'object') return result;
+
+  if (typeof collection == 'object') collection = Object.values(collection);
+
+  if (typeof predicate === 'function') {
+    collection.forEach(function (item) {
+      if (predicate(item)) result.push(item);
+    });
+  }
+
+  if (typeof predicate === 'object') {
+    collection.forEach(function (item) {
+      var has = true;
+
+      for (var key in predicate) {
+        if ((item[key] == 'undefined') || (item[key] != predicate[key])) has = false;
+      }
+
+      if (has) result.push(item);
+    });
+  }
+
+  if (typeof predicate === 'string') {
+    collection.forEach(function (item) {
+      if (item[predicate] != 'undefined' && item[predicate]) {
+        result.push(item);
+      }
+    });
+  }
+
+  return result;
 };
