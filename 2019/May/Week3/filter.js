@@ -22,7 +22,7 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
-  const result = [];
+  let result = [];
 
   if (!collection || !predicate) return result;
   if (typeof collection != 'object') return result;
@@ -30,13 +30,11 @@ module.exports = function filter(collection, predicate) {
   if (typeof collection == 'object') collection = Object.values(collection);
 
   if (typeof predicate === 'function') {
-    collection.forEach(function (item) {
-      if (predicate(item)) result.push(item);
-    });
+    result = collection.filter(item => predicate(item));
   }
 
   if (typeof predicate === 'object') {
-    collection.forEach(function (item) {
+    collection.forEach(item => {
       var has = true;
 
       for (var key in predicate) {
@@ -48,11 +46,7 @@ module.exports = function filter(collection, predicate) {
   }
 
   if (typeof predicate === 'string') {
-    collection.forEach(function (item) {
-      if (item[predicate] != 'undefined' && item[predicate]) {
-        result.push(item);
-      }
-    });
+    result = collection.filter(item => item[predicate]);
   }
 
   return result;
