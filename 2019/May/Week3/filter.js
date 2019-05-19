@@ -8,19 +8,57 @@
  * @example
  *
  * const users = [
- *   { 'user': 'barney', 'age': 36, 'active': true },
- *   { 'user': 'fred',   'age': 40, 'active': false }
- * ];
- *
- * // 过滤出 active 为 true 的元素
- * filter(users, function(o) { return !o.active; });
- *
- * // 过滤 age 为 36 且 active 为 true 的元素
- * filter(users, { 'age': 36, 'active': true });
- *
- * // 过滤出 active 为 true 的元素
- * filter(users, 'active');
- */
-module.exports = function filter(collection, predicate) {
-
-};
+  *   { 'user': 'barney', 'age': 36, 'active': true },
+  *   { 'user': 'fred',   'age': 40, 'active': false }
+  * ];
+  *
+  * // 过滤出 active 为 true 的元素
+  * filter(users, function(o) { return !o.active; });
+  *
+  * // 过滤 age 为 36 且 active 为 true 的元素
+  * filter(users, { 'age': 36, 'active': true });
+  *
+  * // 过滤出 active 为 true 的元素
+  * filter(users, 'active');
+  */
+ module.exports = function filter(collection, predicate) {
+   const retArr = []
+   if (Object.prototype.toString.call(collection) === '[object Array]') {
+     for (let i=0; i<collection.length; i++) {
+       filterObj(retArr, collection[i], predicate)
+     }
+   } else if (Object.prototype.toString.call(collection) === '[object Object]') {
+     for (let key in collection) {
+       filterObj(retArr, collection[key], predicate)
+     }
+   }
+ 
+   return retArr
+ };
+ 
+ function filterObj(retArr, obj, predicate) {
+ 
+   if (Object.prototype.toString.call(predicate) === '[object Object]') {
+     let isFit = true
+     for (let key in predicate) {
+       if (obj[key] !== predicate[key]) {
+         isFit = false
+         break
+       }
+     }
+ 
+     if (isFit) {
+       retArr.push(obj)
+     }
+ 
+   } else if (Object.prototype.toString.call(predicate) === '[object String]') {
+     if (obj[predicate]) {
+       retArr.push(obj)
+     }
+   } else if (Object.prototype.toString.call(predicate) === '[object Function]') {
+     if (predicate(obj) === true) {
+       retArr.push(obj)
+     }
+   }
+ };
+ 
