@@ -24,22 +24,20 @@
  module.exports = function filter(collection, predicate) {
    const retArr = []
    if (Array.isArray(collection)) {
-     for (let i=0; i<collection.length; i++) {
-       filterObj(retArr, collection[i], predicate)
-     }
+      collection.forEach(val => {
+        filterObj(retArr, val, predicate)
+      })
    } else if (Object.prototype.toString.call(collection) === '[object Object]') {
-     for (let key in collection) {
-       filterObj(retArr, collection[key], predicate)
-     }
+      for (let key in collection) {
+        filterObj(retArr, collection[key], predicate)
+      }
    }
  
    return retArr
  };
  
  function filterObj(retArr, obj, predicate) {
-   const predicateType = Object.prototype.toString.call(predicate)
- 
-   if (predicateType === '[object Object]') {
+   if (Object.prototype.toString.call(predicate) === '[object Object]') {
      let isFit = true
      for (let key in predicate) {
        if (obj[key] !== predicate[key]) {
@@ -52,11 +50,11 @@
        retArr.push(obj)
      }
  
-   } else if (predicateType === '[object String]') {
+   } else if (typeof predicate === 'string') {
      if (obj[predicate]) {
        retArr.push(obj)
      }
-   } else if (predicateType === '[object Function]') {
+   } else if (typeof predicate === 'function') {
      if (predicate(obj) === true) {
        retArr.push(obj)
      }
