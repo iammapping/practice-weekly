@@ -23,11 +23,7 @@
  */
 module.exports = function filter(collection, predicate) {
   var arr = []
-
   if(collection && (typeof collection == 'object' || Array.isArray(collection))) {
-    if(!predicate) {
-      return [];
-    }
     if(predicate && typeof predicate == 'function') {
       for(var i in collection) {
         if(predicate(collection[i])) {
@@ -36,14 +32,11 @@ module.exports = function filter(collection, predicate) {
       }
     }
     if(predicate && typeof predicate == 'object' ) {
-      if (JSON.stringify(predicate) == "{}") {
-        return [];
-      }
       for(var i in collection) {
-        var isPass = false;
+        var isPass = true
         for(var j in predicate) {
-          if(predicate[j] == collection[i][j]) {
-            isPass == true;
+          if(predicate[j] != collection[i][j]) {
+            isPass = false
           }
         }
         if(isPass) {
