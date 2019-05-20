@@ -46,7 +46,7 @@ module.exports = function filter(collection, predicate) {
     }
     if(predicate && typeof predicate == 'string') {
       for(var i in collection) {
-        if(collection[i][predicate] || collection[i][predicate] == 36) {
+        if(collection[i][predicate]) {
           arr.push(collection[i]);
         }
 
