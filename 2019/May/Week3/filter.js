@@ -26,43 +26,39 @@ module.exports = function filter(collection, predicate) {
         return []; 
     }
 
-    //convert to array
+    // convert to array
     let coll = [];
     if(typeof collection === 'object') {
-        for(const key in collection) {
-            coll.push(collection[key]);
-        }
+        // for(const key of collection) {
+        //     coll.push(collection[key]);
+        // }
+        // not for .. in 
+        Object.keys(collection).forEach((c) => coll.push(c));
     }else {
         coll = collection;
     }
 
-    if(coll.length == 0) { return []; }
+    if(coll.length === 0) { return []; }
 
-    //filter
-    let ct = typeof predicate;
-    if(ct == 'function') {
-        return coll.filter((o) => { 
-            return predicate(o); 
-        });
+    // filter
+    const ct = typeof predicate;
+    if(ct === 'function') {
+        return coll.filter((o) => predicate(o));
     }
 
-    if(ct == 'object') { //&& Object.keys(predicate).length > 0
-        if(Object.keys(predicate).length == 0) { //空对象即不过滤，直接返回
+    if(ct === 'object') { // && Object.keys(predicate).length > 0
+        if(Object.keys(predicate).length === 0) { // 空对象即不过滤，直接返回
             return coll;
         }
 
         return coll.filter((o) => {
-            let keys = Object.keys(predicate);
-            return keys.every((k) => { 
-                return o[k] == predicate[k]; 
-            });
+            const keys = Object.keys(predicate);
+            return keys.every((k) => o[k] === predicate[k]);
         });
     }
     
-    if(ct == 'string' && predicate != '') {
-        return coll.filter((o) => {
-            return o[predicate];
-        });
+    if(ct === 'string' && predicate !== '') {
+        return coll.filter((o) => o[predicate]);
     }
     
     return [];
