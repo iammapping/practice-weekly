@@ -22,19 +22,19 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
-  var arr = []
+  const arr = [];
   if(collection && (typeof collection == 'object' || Array.isArray(collection))) {
     if(predicate && typeof predicate == 'function') {
-      for(var i in collection) {
+      for(const i in collection) {
         if(predicate(collection[i])) {
           arr.push(collection[i]);
         }
       }
     }
     if(predicate && typeof predicate == 'object' ) {
-      for(var i in collection) {
+      for(const i in collection) {
         var isPass = true
-        for(var j in predicate) {
+        for(const j in predicate) {
           if(predicate[j] != collection[i][j]) {
             isPass = false
           }
@@ -45,7 +45,7 @@ module.exports = function filter(collection, predicate) {
       }
     }
     if(predicate && typeof predicate == 'string') {
-      for(var i in collection) {
+      for(const i in collection) {
         if(collection[i][predicate]) {
           arr.push(collection[i]);
         }
