@@ -52,8 +52,7 @@ module.exports = function filter(collection, predicate) {
         }
 
         return coll.filter((o) => {
-            const keys = Object.keys(predicate);
-            return keys.every((k) => o[k] === predicate[k]);
+            return Object.keys(predicate).every((k) => o[k] === predicate[k]);
         });
     }
     
