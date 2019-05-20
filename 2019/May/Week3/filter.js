@@ -33,7 +33,7 @@ module.exports = function filter(collection, predicate) {
         //     coll.push(collection[key]);
         // }
         // not for .. in 
-        Object.keys(collection).forEach((c) => coll.push(c));
+        Object.keys(collection).forEach((k) => coll.push(collection[k]));
     }else {
         coll = collection;
     }
@@ -51,9 +51,7 @@ module.exports = function filter(collection, predicate) {
             return coll;
         }
 
-        return coll.filter((o) => {
-            return Object.keys(predicate).every((k) => o[k] === predicate[k]);
-        });
+        return coll.filter((o) => Object.keys(predicate).every((k) => o[k] === predicate[k]));
     }
     
     if(ct === 'string' && predicate !== '') {
