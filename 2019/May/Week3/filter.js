@@ -23,35 +23,35 @@
  */
 module.exports = function filter(collection, predicate) {
   const arr = [];
-  if(collection && (typeof collection == 'object' || Array.isArray(collection))) {
-    if(predicate && typeof predicate == 'function') {
-      for(const i in collection) {
-        if(predicate(collection[i])) {
-          arr.push(collection[i]);
-        }
-      }
-    }
-    if(predicate && typeof predicate == 'object' ) {
-      for(const i in collection) {
-        var isPass = true
-        for(const j in predicate) {
-          if(predicate[j] != collection[i][j]) {
-            isPass = false
-          }
-        }
-        if(isPass) {
-          arr.push(collection[i]);
-        }
-      }
-    }
-    if(predicate && typeof predicate == 'string') {
-      for(const i in collection) {
-        if(collection[i][predicate]) {
-          arr.push(collection[i]);
-        }
 
+  let convertedArr = collection;
+  if(collection && typeof collection === 'object') {
+    convertedArr = Object.values(collection);
+  }
+
+  if(collection && Array.isArray(convertedArr)) {
+    convertedArr.forEach(item => {
+      if(predicate && typeof predicate === 'function') {
+        if(predicate(item)) {
+          arr.push(item);
+        }
+      } else if(predicate && typeof predicate === 'object') {
+        const predicateKeys = Object.keys(predicate);
+        let isPass = true;
+        predicateKeys.forEach(i => {
+          if(predicate[i] !== item[i]) {
+            isPass = false;
+          }
+        });
+        if(isPass) {
+          arr.push(item);
+        }
+      } else if(predicate && typeof predicate === 'string') {
+        if(item[predicate]) {
+          arr.push(item);
+        }
       }
-    }
+    });
   }
   return arr;
 };
