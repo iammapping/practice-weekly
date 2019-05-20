@@ -23,7 +23,7 @@
   */
  module.exports = function filter(collection, predicate) {
    const retArr = []
-   if (Object.prototype.toString.call(collection) === '[object Array]') {
+   if (Array.isArray(collection)) {
      for (let i=0; i<collection.length; i++) {
        filterObj(retArr, collection[i], predicate)
      }
@@ -37,8 +37,9 @@
  };
  
  function filterObj(retArr, obj, predicate) {
+   const predicateType = Object.prototype.toString.call(predicate)
  
-   if (Object.prototype.toString.call(predicate) === '[object Object]') {
+   if (predicateType === '[object Object]') {
      let isFit = true
      for (let key in predicate) {
        if (obj[key] !== predicate[key]) {
@@ -51,11 +52,11 @@
        retArr.push(obj)
      }
  
-   } else if (Object.prototype.toString.call(predicate) === '[object String]') {
+   } else if (predicateType === '[object String]') {
      if (obj[predicate]) {
        retArr.push(obj)
      }
-   } else if (Object.prototype.toString.call(predicate) === '[object Function]') {
+   } else if (predicateType === '[object Function]') {
      if (predicate(obj) === true) {
        retArr.push(obj)
      }
