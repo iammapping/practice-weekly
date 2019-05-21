@@ -27,22 +27,14 @@ module.exports = function filter(collection, predicate) {
   if (!collection || !predicate) return result;
   if (typeof collection !== 'object') return result;
 
-  const coll = typeof collection === 'object' ? Object.values(collection) : collection;
+  const coll = (collection.constructor === Object) ? Object.values(collection) : collection;
 
   if (typeof predicate === 'function') {
     result = coll.filter(item => predicate(item));
   }
 
   if (typeof predicate === 'object') {
-    coll.forEach(item => {
-      let has = true;
-
-      Object.keys(predicate).forEach(key => {
-        if ((item[key] === 'undefined') || (item[key] !== predicate[key])) has = false;
-      });
-
-      if (has) result.push(item);
-    });
+    result = coll.filter(item => (Object.keys(predicate).every(key => item[key] === predicate[key])));
   }
 
   if (typeof predicate === 'string') {
