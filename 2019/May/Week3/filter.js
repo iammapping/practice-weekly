@@ -22,5 +22,41 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
+  if (!collection || typeof collection !== 'object' && !Array.isArray(collection) || !predicate) {
+    return [];
+  }
 
-};
+  function colFilter(col, callback) {
+    if (Array.isArray(col)) {
+      return col.filter(callback);
+    }
+
+    if (typeof (col) === 'object') {
+      const result = [];
+
+      /* eslint no-restricted-syntax: "error" */
+      for (const key in col) {
+        if (Object.prototype.hasOwnProperty.call(col, key) && callback(col[key])) {
+          result.push(col[key]);
+        }
+      }
+      return result;
+    }
+
+    return [];
+  }
+
+  if (typeof(predicate) === 'string') {
+    return colFilter(collection, obj => obj[predicate]);
+  }
+
+  if (typeof(predicate) === 'function') {
+    return colFilter(collection, obj => predicate(obj));
+  }
+
+  if (typeof(predicate) === 'object') {
+    return colFilter(collection, obj => Object.keys(predicate).every(key => obj[key] === predicate[key]));
+  }
+
+  return [];
+}
