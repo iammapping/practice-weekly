@@ -1,29 +1,4 @@
 /**
- * @param {Array|Object} col
- * @param {Function} callback
- * @return {Array}
- */
-function colFilter(col, callback) {
-  if (Array.isArray(col)) {
-    return col.filter(callback);
-  }
-
-  if (typeof(col) === 'object') {
-    const result = [];
-
-    /* eslint no-restricted-syntax: "error" */
-    for (const key in col) {
-      if (Object.prototype.hasOwnProperty.call(col, key) && callback(col[key])) {
-        result.push(col[key]);
-      }
-    }
-    return result;
-  }
-
-  return [];
-}
-
-/**
  * 按条件过滤传入的集合
  *
  * @param {Array|Object} collection 用于查找的集合
@@ -48,6 +23,26 @@ function colFilter(col, callback) {
  */
 module.exports = function filter(collection, predicate) {
   if (!collection || typeof collection !== 'object' && !Array.isArray(collection) || !predicate) {
+    return [];
+  }
+
+  function colFilter(col, callback) {
+    if (Array.isArray(col)) {
+      return col.filter(callback);
+    }
+
+    if (typeof (col) === 'object') {
+      const result = [];
+
+      /* eslint no-restricted-syntax: "error" */
+      for (const key in col) {
+        if (Object.prototype.hasOwnProperty.call(col, key) && callback(col[key])) {
+          result.push(col[key]);
+        }
+      }
+      return result;
+    }
+
     return [];
   }
 
