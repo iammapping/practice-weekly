@@ -58,8 +58,10 @@ function colFilter(col, callback) {
 
   if (typeof(col) === 'object') {
     const result = [];
+
+    /* eslint no-restricted-syntax: "error" */
     for (const key in col) {
-      if (callback(col[key])) {
+      if (Object.prototype.hasOwnProperty.call(col, key) && callback(col[key])) {
         result.push(col[key]);
       }
     }
