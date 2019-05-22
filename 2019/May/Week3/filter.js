@@ -26,52 +26,23 @@ module.exports = function filter(collection, predicate) {
     return [];
   }
 
-  let col = collection;
-  if (typeof(collection) === 'object') {
-    col = Object.values(collection);
-  }
-
-  if (typeof(predicate) === 'string') {
-    return col.filter(obj => obj[predicate]);
-  }
-
-  if (typeof(predicate) === 'function') {
-    return col.filter(obj => predicate(obj))
-  }
-
-  if (typeof(predicate) === 'object') {
-    return col.filter(obj => Object.keys(predicate).every(key => obj[key] === predicate[key]));
-  }
-
-  return [];
-};
-
-/**
- * @param {Array|Object} col
- * @param {Function} callback
- * @return {Array}
- */
-function colFilter(col, callback) {
-  if (Array.isArray(col)) {
-    return col.filter(callback);
-  }
-
-  if (typeof(col) === 'object') {
-    const result = [];
-    for (const key in col) {
-      if (callback(col[key])) {
-        result.push(col[key]);
-      }
+  function colFilter(col, callback) {
+    if (Array.isArray(col)) {
+      return col.filter(callback);
     }
-    return result;
-  }
 
-  return [];
-}
+    if (typeof (col) === 'object') {
+      const result = [];
 
-// filter版本2，性能优化, 当collection为object时使用for...in，不使用Object.values将其转为数组
-module.exports.filter = function filter(collection, predicate) {
-  if (!collection || typeof collection !== 'object' && !Array.isArray(collection) || !predicate) {
+      /* eslint no-restricted-syntax: "error" */
+      for (const key in col) {
+        if (Object.prototype.hasOwnProperty.call(col, key) && callback(col[key])) {
+          result.push(col[key]);
+        }
+      }
+      return result;
+    }
+
     return [];
   }
 

@@ -1,5 +1,5 @@
 const { expect } = require('chai');
-const { filter } = require('./filter');
+const filter = require('./filter');
 
 describe('2019 May Week3 Test: filter', () => {
   describe('collection as array', () => {
@@ -74,9 +74,6 @@ describe('2019 May Week3 Test: filter', () => {
         .to.be.an('array')
         .and.has.lengthOf(0);
       expect(filter(123, 123))
-        .to.be.an('array')
-        .and.has.lengthOf(0);
-      expect(filter(123, {active: true}))
         .to.be.an('array')
         .and.has.lengthOf(0);
     });
