@@ -22,24 +22,41 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
-  let result = [];
-
-  if (!collection || !predicate) return result;
-  if (typeof collection !== 'object') return result;
-
-  const coll = (collection.constructor === Object) ? Object.values(collection) : collection;
-
-  if (typeof predicate === 'function') {
-    result = coll.filter(item => predicate(item));
+  if (!collection || typeof collection !== 'object' && !Array.isArray(collection) || !predicate) {
+    return [];
   }
 
-  if (typeof predicate === 'object') {
-    result = coll.filter(item => (Object.keys(predicate).every(key => item[key] === predicate[key])));
+  function colFilter(col, callback) {
+    if (Array.isArray(col)) {
+      return col.filter(callback);
+    }
+
+    if (typeof (col) === 'object') {
+      const result = [];
+
+      /* eslint no-restricted-syntax: "error" */
+      for (const key in col) {
+        if (Object.prototype.hasOwnProperty.call(col, key) && callback(col[key])) {
+          result.push(col[key]);
+        }
+      }
+      return result;
+    }
+
+    return [];
   }
 
-  if (typeof predicate === 'string') {
-    result = coll.filter(item => item[predicate]);
+  if (typeof(predicate) === 'string') {
+    return colFilter(collection, obj => obj[predicate]);
   }
 
-  return result;
-};
+  if (typeof(predicate) === 'function') {
+    return colFilter(collection, obj => predicate(obj));
+  }
+
+  if (typeof(predicate) === 'object') {
+    return colFilter(collection, obj => Object.keys(predicate).every(key => obj[key] === predicate[key]));
+  }
+
+  return [];
+}
