@@ -22,42 +22,41 @@
  * filter(users, 'active');
  */
 module.exports = function filter(collection, predicate) {
-  const result = [];
-
-  let convertedCollection = collection;
-  if(collection && typeof collection === 'object') {
-    convertedCollection = Object.values(collection);
+  if (!collection || typeof collection !== 'object' && !Array.isArray(collection) || !predicate) {
+    return [];
   }
 
-  if(Array.isArray(convertedCollection)) {
-    if(typeof predicate === 'function') {
-      convertedCollection.map(predicate).forEach((funcResult, index) => {
-        if(funcResult) {
-          result.push(convertedCollection[index]);
-        }
-      })
-    } else if(typeof predicate === 'object') {
-      convertedCollection.forEach(item => {
-        let isMatched = true;
-
-        Object.keys(predicate).forEach(i => {
-          if(i && item[i] !== predicate[i]) {
-            isMatched = false;
-          }
-        });
-
-        if(isMatched) {
-          result.push(item);
-        }
-      })
-    } else {
-      convertedCollection.forEach(item => {
-        if(item[predicate]) {
-          result.push(item);
-        }
-      })
+  function colFilter(col, callback) {
+    if (Array.isArray(col)) {
+      return col.filter(callback);
     }
+
+    if (typeof (col) === 'object') {
+      const result = [];
+
+      /* eslint no-restricted-syntax: "error" */
+      for (const key in col) {
+        if (Object.prototype.hasOwnProperty.call(col, key) && callback(col[key])) {
+          result.push(col[key]);
+        }
+      }
+      return result;
+    }
+
+    return [];
   }
 
-  return result;
-};
+  if (typeof(predicate) === 'string') {
+    return colFilter(collection, obj => obj[predicate]);
+  }
+
+  if (typeof(predicate) === 'function') {
+    return colFilter(collection, obj => predicate(obj));
+  }
+
+  if (typeof(predicate) === 'object') {
+    return colFilter(collection, obj => Object.keys(predicate).every(key => obj[key] === predicate[key]));
+  }
+
+  return [];
+}
