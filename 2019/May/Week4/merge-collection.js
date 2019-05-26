@@ -32,6 +32,58 @@
  * // 按 (o) => o.dim1 合并
  * mergeCollection((o) => o.dim1, col1, col2, col3);
  */
-module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
 
+function assign(targetPar, ...parameters) {
+  const target = Object(targetPar);
+
+  parameters.forEach(source => {
+    Object.keys(source).forEach(key => {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    });
+  });
+
+  return target;
+};
+
+module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
+  if (!keys || !baseCollection || !restCollection) return baseCollection;
+
+  const result = [];
+  let baseColl = baseCollection;
+  let restColl = restCollection;
+  let keysArr = keys;
+
+  if (typeof keys === 'string') keysArr = [keys];
+
+  if (typeof baseCollection === 'object' && !Array.isArray(baseCollection)) {
+    baseColl = Object.values(baseCollection);
+  }
+
+  const arrayRestColl = [];
+  restColl.forEach(item => {
+    if (typeof item === 'object' && !Array.isArray(item)) {
+      arrayRestColl.push(Object.values(item));
+    }
+  });
+  if (arrayRestColl.length) restColl = arrayRestColl;
+
+  baseColl.forEach(bi => {
+    let biTmp = bi;
+    restColl.forEach(rc => {
+      rc.forEach(ri => {
+        let match = false;
+
+        if (typeof keysArr === 'object' && Array.isArray(keysArr) && keysArr.every(key => (biTmp[key] === ri[key]))) match = true;
+
+        if (typeof keysArr === 'function' && (keysArr(ri) === keysArr(biTmp))) match = true;
+
+        if (match) biTmp = assign(biTmp, ri);
+      });
+    });
+    result.push(biTmp);
+  });
+
+  return result;
 };
