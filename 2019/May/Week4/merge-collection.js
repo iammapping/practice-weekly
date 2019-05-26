@@ -32,6 +32,49 @@
  * // 按 (o) => o.dim1 合并
  * mergeCollection((o) => o.dim1, col1, col2, col3);
  */
-module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
 
+module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
+  if(['string', 'function'].indexOf(typeof keys) < 0 && !Array.isArray(keys)) {
+    return baseCollection;
+  }
+
+  if(!Array.isArray(baseCollection) && !(typeof baseCollection === 'object')) {
+    return baseCollection;
+  }
+
+  const result = [];
+
+  Object.values(baseCollection).forEach((baseItem) => {
+    const resultItem = baseItem;
+
+    restCollection.forEach(restCollectionItem => {
+      Object.values(restCollectionItem).forEach((restItem) => {
+        let matched = true;
+
+        if (typeof keys === 'function') {
+          if(keys(baseItem) !== keys(restItem)) {
+            matched = false;
+          }
+        } else {
+          const keysArr = typeof keys === 'string' ? [keys] : keys;
+
+          keysArr.forEach((key) => {
+            if(baseItem[key] !== restItem[key]) {
+              matched = false;
+            }
+          });
+        }
+
+        if(matched) {
+          Object.keys(restItem).forEach((restKey) => {
+            resultItem[restKey] = restItem[restKey];
+          })
+        }
+      })
+    });
+
+    result.push(resultItem);
+  });
+
+  return result;
 };
