@@ -5,7 +5,8 @@ function getMergedObject(keys, baseObj, distObject) {
 
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < keys.length; i++) {
-      if (distObject[i] !== baseObj[i]) {
+      const key = keys[i];
+      if (distObject[key] !== baseObj[key]) {
         isFit = false;
         break;
       }
