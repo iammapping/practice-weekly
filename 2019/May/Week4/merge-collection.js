@@ -14,6 +14,18 @@ function getCollFromKeybyGroup(keys, keybyGroup) {
     return r;
 }
 
+function getValueKeys(obj, keys) {
+    const valueKeys = [];
+    if(Array.isArray(keys)) {
+        keys.forEach(key => {
+            valueKeys.push(obj[key]);
+        });
+    }else if(typeof keys === 'function') {
+        valueKeys.push(keys(obj))
+    }
+    return valueKeys;
+}
+
 function arrayRowsKeybyGroup(keys, arr) {
     const l = keys.length - 1;
     const rs = {};
@@ -118,15 +130,7 @@ module.exports = function mergeCollection(keys, baseCollection, ...restCollectio
 
     const rs = [];
     baseColl.forEach(o => {
-        const groupKeys = [];
-        if(Array.isArray(rkeys)) {
-            rkeys.forEach(key => {
-                groupKeys.push(o[key]);
-            });
-        }else if(typeof rkeys === 'function') {
-            groupKeys.push(rkeys(o))
-        }
-        
+        const groupKeys = getValueKeys(o, rkeys);
         const coll = getCollFromKeybyGroup(groupKeys, allCollKeybyGroup);
         if(coll.length > 1) {
             let r = {};
