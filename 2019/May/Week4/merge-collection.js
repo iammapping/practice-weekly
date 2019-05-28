@@ -1,4 +1,12 @@
-const objectAssign = require('object-assign');
+// const objectAssign = require('object-assign');
+
+function objectMerge(obj1, obj2) {
+    const r = obj1;
+    Object.keys(obj2).forEach(key => {
+        r[key] = obj2[key];
+    });
+    return r;
+}
 
 function getCollFromKeybyGroup(keys, keybyGroup) {
     const l = keys.length - 1;
@@ -136,7 +144,8 @@ module.exports = function mergeCollection(keys, baseCollection, ...restCollectio
             let r = {};
             coll.forEach(c => {
                 // r = Object.assign(r, c);
-                r = objectAssign(r, c);
+                // r = objectAssign(r, c);
+                r = objectMerge(r, c);
             });
             rs.push(r);
         }else {
