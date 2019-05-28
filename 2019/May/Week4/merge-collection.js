@@ -111,9 +111,11 @@ module.exports = function mergeCollection(keys, baseCollection, ...restCollectio
         return [];
     }
 
-    let baseColl = baseCollection;
+    let baseColl = [];
     if(!Array.isArray(baseCollection)) {
-        baseColl = Object.values(baseCollection);
+        Object.keys(baseCollection).forEach(key => baseColl.push(baseCollection[key]));
+    }else {
+        baseColl = baseCollection;
     }
 
     if(!keys) return baseCollection;
@@ -129,7 +131,9 @@ module.exports = function mergeCollection(keys, baseCollection, ...restCollectio
         if(Array.isArray(o)) {
             restColl = restColl.concat(o);
         }else {
-            restColl = restColl.concat(Object.values(o));
+            const rc = [];
+            Object.keys(o).forEach(key => rc.push(o[key]));
+            restColl = restColl.concat(rc);
         }
     });
 
