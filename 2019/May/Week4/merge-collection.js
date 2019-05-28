@@ -1,3 +1,57 @@
+const objectAssign = require('object-assign');
+
+function getCollFromKeybyGroup(keys, keybyGroup) {
+    const l = keys.length - 1;
+    let group = keybyGroup;
+    let r = [];
+    keys.forEach((key, i) => {
+        if(l === i){
+            r = group[key] || [];
+        }else {
+            group = group[key] || {};
+        }
+    });
+    return r;
+}
+
+function arrayRowsKeybyGroup(keys, arr) {
+    const l = keys.length - 1;
+    const rs = {};
+
+    if(Array.isArray(keys)) {
+        arr.forEach(a => {
+            let r = rs;
+            keys.forEach((key, i) => {
+                if(r[a[key]]) {
+                    if(i === l) {
+                        r[a[key]].push(a);
+                    }else {
+                        r = r[a[key]];
+                    }
+                }else if(i === l) {
+                    r[a[key]] = [a];
+                }else {
+                    r[a[key]] = {};
+                    r = r[a[key]];
+                }
+                
+            });
+        });
+    }else if(typeof keys === 'function') {
+        arr.forEach(a => {
+            const key = keys(a);
+            if(rs[key]) {
+                rs[key].push(a);
+            }else {
+                rs[key] = [a];
+            }
+        });
+        
+    }
+
+    return rs    
+}
+
 /**
  * 按指定键合并多个集合
  *
@@ -33,5 +87,58 @@
  * mergeCollection((o) => o.dim1, col1, col2, col3);
  */
 module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
+    if(!baseCollection || (!Array.isArray(baseCollection) && typeof baseCollection !== 'object' )) {
+        return [];
+    }
 
+    let baseColl = baseCollection;
+    if(!Array.isArray(baseCollection)) {
+        baseColl = Object.values(baseCollection);
+    }
+
+    if(!keys) return baseCollection;
+    if(!restCollection || (!Array.isArray(restCollection) && typeof restCollection !== 'object' )) return baseCollection;
+
+    let rkeys = keys;
+    if(typeof rkeys === 'string') {
+        rkeys = [rkeys];
+    }
+
+    let restColl = [];
+    restCollection.forEach(o => {
+        if(Array.isArray(o)) {
+            restColl = restColl.concat(o);
+        }else {
+            restColl = restColl.concat(Object.values(o));
+        }
+    });
+
+    const allColl = baseColl.concat(restColl);
+    const allCollKeybyGroup = arrayRowsKeybyGroup(rkeys, allColl);
+
+    const rs = [];
+    baseColl.forEach(o => {
+        const groupKeys = [];
+        if(Array.isArray(rkeys)) {
+            rkeys.forEach(key => {
+                groupKeys.push(o[key]);
+            });
+        }else if(typeof rkeys === 'function') {
+            groupKeys.push(rkeys(o))
+        }
+        
+        const coll = getCollFromKeybyGroup(groupKeys, allCollKeybyGroup);
+        if(coll.length > 1) {
+            let r = {};
+            coll.forEach(c => {
+                // r = Object.assign(r, c);
+                r = objectAssign(r, c);
+            });
+            rs.push(r);
+        }else {
+            rs.push(o);
+        }
+    });
+
+    return rs;
 };
