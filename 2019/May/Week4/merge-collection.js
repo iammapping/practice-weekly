@@ -118,8 +118,8 @@ module.exports = function mergeCollection(keys, baseCollection, ...restCollectio
         baseColl = baseCollection;
     }
 
-    if(!keys) return baseCollection;
-    if(!restCollection || (!Array.isArray(restCollection) && typeof restCollection !== 'object' )) return baseCollection;
+    if(!keys) return baseColl;
+    if(!restCollection || (!Array.isArray(restCollection) && typeof restCollection !== 'object' )) return baseColl;
 
     let rkeys = keys;
     if(typeof rkeys === 'string') {
