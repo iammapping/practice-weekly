@@ -31,7 +31,47 @@
  *
  * // 按 (o) => o.dim1 合并
  * mergeCollection((o) => o.dim1, col1, col2, col3);
+ *
+ *
+ *
+ *
+ *
  */
+
 module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
 
+  const arr = [];
+
+  Object.values(baseCollection).forEach((baseCollectionItem) => {
+    const arrItem = baseCollectionItem;
+      restCollection.forEach(restCollectionItem => {
+          Object.values(restCollectionItem).forEach((restItem) => {
+              let matched = true;
+              if (typeof keys === 'function') {
+                  if(keys(baseCollectionItem) !== keys(restItem)) {
+                    matched = false;
+                  }
+              } else if (typeof keys === 'string') {
+                if(baseCollectionItem[keys] !== restItem[keys]) {
+                  matched = false;
+                }
+              } else {
+                keys.forEach((key) => {
+                  if(baseCollectionItem[key] !== restItem[key]) {
+                    matched = false;
+                  }
+                });
+              }
+
+              if(matched) {
+                Object.keys(restItem).forEach((restKey) => {
+                  arrItem[restKey] = restItem[restKey];
+                });
+              }
+          })
+      });
+      arr.push(arrItem);
+  });
+
+  return arr;
 };
