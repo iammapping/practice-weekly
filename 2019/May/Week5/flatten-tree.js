@@ -1,3 +1,24 @@
+const objectAssign = require('object-assign');
+
+function arrayRowsKeyby(keys, arr) {
+    const len = keys.length - 1;
+    const rs = {};
+
+    arr.forEach(a => {
+        let r = rs;
+        keys.forEach((key, i) => {
+            if(i === len) {
+                r[a[key]] = objectAssign({}, a);
+            }else {
+                if(!r[a[key]]) r[a[key]] = {};
+                r = r[a[key]];
+            }
+        });
+    });
+
+    return rs    
+}
+
 /**
  * 平面结构转树结构
  * @param   {array}     flattenArr 平面数组
@@ -35,5 +56,29 @@
  * ]
  */
 module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
+    if(!Array.isArray(flattenArr) || flattenArr.length === 0) return [];
 
+    const treeArr = [];
+
+    const arrKeyby = arrayRowsKeyby([level, id], flattenArr);
+    const descLevels = Object.keys(arrKeyby).sort((a, b) => b - a);
+
+    descLevels.forEach(lev => {
+        const pLev = lev - 1;
+        Object.keys(arrKeyby[lev]).forEach(idVal => {
+            const item = arrKeyby[lev][idVal];
+            const pidVal = item[pid];
+
+            if(pidVal === 0 && pLev === 0) { // 此处约定id必须是数字型
+                treeArr.push(item);
+                return;
+            }
+            if(!arrKeyby[pLev] || !arrKeyby[pLev][pidVal]) return;
+            
+            if(!arrKeyby[pLev][pidVal][children]) { arrKeyby[pLev][pidVal][children] = []; }
+            arrKeyby[pLev][pidVal][children].push(item);
+        });
+    });
+
+    return treeArr;
 }

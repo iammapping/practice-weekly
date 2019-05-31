@@ -30,5 +30,8 @@
     "hooks": {
       "pre-commit": "npm run lint && npm test"
     }
+  },
+  "dependencies": {
+    "object-assign": "^4.1.1"
   }
 }
