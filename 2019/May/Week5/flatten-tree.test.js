@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const flatten2tree = require('./flatten-tree');
 
-describe('2019 May Week4 Test: flatten-tree', () => {
+describe('2019 May Week5 Test: flatten-tree', () => {
   it('two level without alias', () => {
     const flattenArr = [
       { id: 1, pid: 0, name: 'a', level: 1 },
