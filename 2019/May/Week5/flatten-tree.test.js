@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const flatten2tree = require('./flatten-tree');
 
-describe('2019 May Week4 Test: flatten-tree', () => {
+describe('2019 May Week5 Test: flatten-tree', () => {
   it('two level without alias', () => {
     const flattenArr = [
       { id: 1, pid: 0, name: 'a', level: 1 },
@@ -15,7 +15,7 @@ describe('2019 May Week4 Test: flatten-tree', () => {
     expect(tree[0]).to.have.property('children');
     expect(tree[0].children).to.be.an('array');
     expect(tree[0].children).to.have.lengthOf(2);
-    expect(tree[1].children).to.be.undefined;
+    expect(tree[1].children).to.be.undefined();
   });
 
   it('two level with alias', () => {
@@ -33,10 +33,10 @@ describe('2019 May Week4 Test: flatten-tree', () => {
     expect(tree[0]).to.have.property('name');
     expect(tree[0]).to.have.property('slevel');
     expect(tree[0]).to.have.property('items');
-    expect(tree[0].children).to.be.undefined;
+    expect(tree[0].children).to.be.undefined();
     expect(tree[0].items).to.be.an('array');
     expect(tree[0].items).to.have.lengthOf(2);
-    expect(tree[1].children).to.be.undefined;
+    expect(tree[1].children).to.be.undefined();
   });
 
   it('deep level without alias', () => {
