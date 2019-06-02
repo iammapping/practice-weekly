@@ -33,5 +33,75 @@
  * mergeCollection((o) => o.dim1, col1, col2, col3);
  */
 module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
+  if (!keys || !baseCollection || typeof baseCollection !== "object" && !Array.isArray(baseCollection)) {
+    return [];
+  }
 
+  function objectEach(object, callback) {
+    if (!object || !callback) {
+      return;
+    }
+
+    if (Array.isArray(object)) {
+      object.forEach(callback);
+      return;
+    }
+
+    if (typeof object === "object") {
+
+      /* eslint no-restricted-syntax: "error" */
+      for (const key in object) {
+        if (Object.prototype.hasOwnProperty.call(object, key)) {
+          callback(object[key]);
+        }
+      }
+    }
+  }
+
+  function isKeysMatch(baseObj, extraObj) {
+    if (typeof keys === "function" && keys(baseObj) === keys(extraObj)) {
+      return true;
+    }
+
+    if (typeof keys === "string" && baseObj[keys] === extraObj[keys]) {
+      return true;
+    }
+
+    if (Array.isArray(keys) && keys.every(key => baseObj[key] === extraObj[key])) {
+      return true;
+    }
+
+    return false;
+  }
+
+  function colAssign(baseCol, extraCol) {
+    const obj = { ...baseCol };
+    if (isKeysMatch(baseCol, extraCol)) {
+
+      /* eslint no-restricted-syntax: "error" */
+      for (const key in extraCol) {
+        if (Object.prototype.hasOwnProperty.call(extraCol, key)) {
+          obj[key] = extraCol[key];
+        }
+      }
+    }
+
+    return obj;
+  };
+
+
+  const result = [];
+  objectEach(baseCollection, baseCol => {
+    let baseObj = { ...baseCol };
+
+    restCollection.forEach(restCol => {
+      objectEach(restCol, restObj => {
+        baseObj = colAssign(baseObj, restObj);
+      });
+    });
+
+    result.push(baseObj);
+  });
+
+  return result;
 };
