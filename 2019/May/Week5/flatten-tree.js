@@ -1,3 +1,20 @@
+function toTree(arr, pid, idName, pidName, levelName, childrenName) {
+  const tree = [];
+  let temp;
+
+  arr.forEach(item => {
+    if (item[pidName] === pid) {
+      temp = toTree(arr, item[idName], idName, pidName, levelName, childrenName);
+      if (temp.length > 0) {
+        // eslint-disable-next-line no-param-reassign
+        item[childrenName] = temp;
+      }
+      tree.push(item);
+    }
+  })
+  return tree;
+}
+
 /**
  * 平面结构转树结构
  * @param   {array}     flattenArr 平面数组
@@ -35,5 +52,5 @@
  * ]
  */
 module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
-
+  return toTree(flattenArr, 0, id, pid, level, children);
 }
