@@ -35,5 +35,60 @@
  * ]
  */
 module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
+  const tree = [];
 
-}
+  function getNodeByID(node, idVal, idAlias) {
+    if (node[idAlias] === idVal) {
+      return node;
+    }
+
+    if (node[children]) {
+      let result = null;
+      node[children].forEach(item => {
+        if (!result) {
+          result = getNodeByID(item, idVal, idAlias);
+        }
+      });
+
+      return result;
+    }
+
+    return null;
+  }
+
+  function findNode(idVal, idAlias) {
+    let node = null;
+    tree.forEach(t => {
+      if (!node) {
+        node = getNodeByID(t, idVal, idAlias);
+      }
+    });
+
+    return node;
+  }
+
+  flattenArr.forEach(node => {
+    const treeNode = {
+      name: node.name,
+      [id]: node[id],
+      [pid]: node[pid],
+      [level]: node[level],
+    };
+
+    if (node[level] === 1 && node[pid] === 0) {
+      tree.push(treeNode);
+    } else {
+      const parent = findNode(node[pid], id);
+
+      if (parent) {
+        if (!parent[children]) {
+          parent[children] = [treeNode];
+        } else {
+          parent[children].push(treeNode);
+        }
+      }
+    }
+  });
+
+  return tree;
+};
