@@ -5,6 +5,7 @@ function toTree(classifyArr, lv, pid, idName, pidName, childrenName) {
   if (!currentLvArr || currentLvArr.length === 0) return tree;
 
   currentLvArr.forEach(item => {
+    // 第一层级不做pid判断
     if (lv === 1 || item[pidName] === pid) {
       const temp = toTree(classifyArr, lv + 1, item[idName], idName, pidName, childrenName);
       if (temp.length > 0) {
@@ -54,6 +55,7 @@ function toTree(classifyArr, lv, pid, idName, pidName, childrenName) {
  * ]
  */
 module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
+  // 分类数组 [1:[], 2:[] ...]
   const classifyArr = []
   flattenArr.forEach(item => {
     const lv = item[level]
