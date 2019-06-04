@@ -15,6 +15,6 @@ module.exports = {
     'no-unused-vars': 0,
   },
   settings: {
-    polyfills: ['Object.values', 'fetch', 'promises', 'url'],
+    polyfills: ['Object.assign', 'Object.values', 'fetch', 'promises', 'url'],
   },
 };
