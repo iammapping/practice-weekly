@@ -34,51 +34,49 @@
  *   }
  * ]
  */
-module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
-  if(!Array.isArray(flattenArr) || !flattenArr.length) {
+module.exports = function flatten2tree(
+  flattenArr,
+  id = 'id',
+  pid = 'pid',
+  level = 'level',
+  children = 'children'
+) {
+  if (!Array.isArray(flattenArr) || !flattenArr.length) {
     return flattenArr;
   }
 
   const result = {};
   let maxLevel = 0;
   let minLevel = 0;
-  flattenArr.forEach(flattenObj => {
-    const currentLevel = flattenObj[level];
+  flattenArr.forEach(item => {
+    const currentLevel = item[level];
 
-    if(maxLevel === 0 || maxLevel < currentLevel) {
+    if (maxLevel === 0 || maxLevel < currentLevel) {
       maxLevel = currentLevel;
     }
-    if(minLevel === 0 || minLevel > currentLevel) {
+    if (minLevel === 0 || minLevel > currentLevel) {
       minLevel = currentLevel;
     }
 
-    if(!Array.isArray(result[currentLevel])) {
-      result[currentLevel] = [];
-    }
-    result[currentLevel].push(flattenObj);
+    result[currentLevel] = result[currentLevel] || {};
+    result[currentLevel][item[id]] = item;
   });
 
   while (maxLevel > minLevel) {
     maxLevel -= 1;
 
-    const parentLevelArr = result[maxLevel];
-    const childLevelArr = result[maxLevel + 1];
+    const parentLevelObj = result[maxLevel];
+    const childLevelObj = result[maxLevel + 1];
 
-    if(parentLevelArr && childLevelArr) {
-      parentLevelArr.forEach((item, index) => {
-        const parentLevelObj = item;
-        childLevelArr.forEach(childLevelObj => {
-          if(parentLevelObj[id] === childLevelObj[pid]) {
-            parentLevelObj[children] = parentLevelObj[children] || [];
-            parentLevelObj[children].push(childLevelObj);
-          }
-        });
-        parentLevelArr[index] = parentLevelObj;
-      });
+    Object.keys(childLevelObj).forEach(key => {
+      const pidValue = childLevelObj[key][pid];
+      parentLevelObj[pidValue] = parentLevelObj[pidValue] || {};
+      parentLevelObj[pidValue][children] = parentLevelObj[pidValue][children] || [];
+      parentLevelObj[pidValue][children].push(childLevelObj[key]);
+    });
 
-      result[maxLevel] = parentLevelArr;
-    }
+    result[maxLevel] = parentLevelObj;
   }
 
-  return result[minLevel];
-}
+  return Object.values(result[minLevel]);
+};
