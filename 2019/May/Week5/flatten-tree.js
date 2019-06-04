@@ -1,10 +1,12 @@
-function toTree(arr, pid, idName, pidName, levelName, childrenName) {
+function toTree(classifyArr, lv, pid, idName, pidName, childrenName) {
   const tree = [];
-  let temp;
 
-  arr.forEach(item => {
-    if (item[pidName] === pid) {
-      temp = toTree(arr, item[idName], idName, pidName, levelName, childrenName);
+  const currentLvArr = classifyArr[lv]
+  if (!currentLvArr || currentLvArr.length === 0) return tree;
+
+  currentLvArr.forEach(item => {
+    if (lv === 1 || item[pidName] === pid) {
+      const temp = toTree(classifyArr, lv + 1, item[idName], idName, pidName, childrenName);
       if (temp.length > 0) {
         // eslint-disable-next-line no-param-reassign
         item[childrenName] = temp;
@@ -52,5 +54,15 @@ function toTree(arr, pid, idName, pidName, levelName, childrenName) {
  * ]
  */
 module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
-  return toTree(flattenArr, 0, id, pid, level, children);
+  const classifyArr = []
+  flattenArr.forEach(item => {
+    const lv = item[level]
+    if (classifyArr[lv]) {
+      classifyArr[lv].push(item)
+    } else {
+      classifyArr[lv] = [item]
+    }
+  })
+
+  return toTree(classifyArr, 1, 0, id, pid, children);
 }
