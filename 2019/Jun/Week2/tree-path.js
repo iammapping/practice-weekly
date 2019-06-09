@@ -49,7 +49,105 @@ const LOOKUPTYPE = {
  * ]
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
+  const result = [];
 
+  if (!Array.isArray(tree) || !tree.length || ['function', 'object'].indexOf(typeof predicate) < 0) {
+    return result;
+  }
+
+  function checkItem(itemObj) {
+    let isMatched = true;
+
+    if (typeof predicate === 'object') {
+      Object.keys(predicate).forEach(key => {
+        if (typeof predicate[key] === 'function') {
+          if (!predicate[key](itemObj[key])) {
+            isMatched = false;
+          }
+        } else if (predicate[key] !== itemObj[key]) {
+          isMatched = false;
+        }
+      })
+    }
+
+    if (typeof predicate === 'function') {
+     if (!predicate(itemObj)) {
+       isMatched = false;
+     }
+    }
+
+    return isMatched;
+  }
+
+  function addMatchedItem(treeArr, currentIndex, resultItem, needCheck = true) {
+    const tmpResultItem = resultItem.concat();
+
+    if (lookupType === LOOKUPTYPE.ONLY_LEAF) {
+      treeArr.forEach(item => {
+        const tmpItem = Object.assign({}, item);
+        const childrenArr = tmpItem.children;
+
+        delete tmpItem.children;
+        tmpResultItem[currentIndex] = tmpItem;
+
+        if (childrenArr && Array.isArray(childrenArr)) {
+          addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem);
+        } else if (checkItem(tmpItem)) {
+          result.push(tmpResultItem.concat());
+        }
+      })
+    }
+
+    if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN) {
+      treeArr.forEach(item => {
+        const tmpItem = Object.assign({}, item);
+        const childrenArr = tmpItem.children;
+
+        delete tmpItem.children;
+        tmpResultItem[currentIndex] = tmpItem;
+
+        if (!needCheck) {
+          if (childrenArr && Array.isArray(childrenArr)) {
+            addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem, false);
+          } else {
+            result.push(tmpResultItem.concat());
+          }
+        }
+
+        if (needCheck) {
+          if (checkItem(tmpItem)) {
+            if (childrenArr && Array.isArray(childrenArr)) {
+              addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem, false);
+            } else {
+              result.push(tmpResultItem.concat());
+            }
+          } else if (childrenArr && Array.isArray(childrenArr)){
+            addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem);
+          }
+        }
+      })
+    }
+
+    if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN) {
+      treeArr.forEach(item => {
+        const tmpItem = Object.assign({}, item);
+        const childrenArr = tmpItem.children;
+
+        delete tmpItem.children;
+        tmpResultItem[currentIndex] = tmpItem;
+
+        if (checkItem(tmpItem)) {
+          result.push(tmpResultItem.concat());
+        } else if (childrenArr && Array.isArray(childrenArr)){
+          addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem);
+        }
+      })
+    }
+  }
+
+  addMatchedItem(tree, 0, []);
+
+  return result;
 }
 
 module.exports.LOOKUPTYPE = LOOKUPTYPE;
