@@ -34,62 +34,49 @@
  *   }
  * ]
  */
-module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
-  if (!Array.isArray(flattenArr)) {
-    return [];
+module.exports = function flatten2tree(
+  flattenArr,
+  id = 'id',
+  pid = 'pid',
+  level = 'level',
+  children = 'children'
+) {
+  if (!Array.isArray(flattenArr) || !flattenArr.length) {
+    return flattenArr;
   }
 
+  const result = {};
   let maxLevel = 0;
   let minLevel = 0;
-
   flattenArr.forEach(item => {
-    if (maxLevel === 0 || item[level] > maxLevel) {
-      maxLevel = item[level];
+    const currentLevel = item[level];
+
+    if (maxLevel === 0 || maxLevel < currentLevel) {
+      maxLevel = currentLevel;
+    }
+    if (minLevel === 0 || minLevel > currentLevel) {
+      minLevel = currentLevel;
     }
 
-    if (minLevel === 0 || item[level] < minLevel) {
-      minLevel = item[level];
-    }
+    result[currentLevel] = result[currentLevel] || {};
+    result[currentLevel][item[id]] = item;
   });
 
-  let nowLevel = maxLevel;
-  let currentLevelNodes = [];
-  let lastLevelNodes = [];
+  while (maxLevel > minLevel) {
+    maxLevel -= 1;
 
-  function buildData() {
-    lastLevelNodes = currentLevelNodes;
-    currentLevelNodes = [];
+    const parentLevelObj = result[maxLevel];
+    const childLevelObj = result[maxLevel + 1];
 
-    flattenArr.forEach(it => {
-      const item = it;
-
-      if (item[level] !== nowLevel) return;
-
-      const node = item[id];
-      const pNode = item[pid];
-
-      if (lastLevelNodes[node]) {
-        item[children] = lastLevelNodes[node];
-      }
-
-      if (!currentLevelNodes[pNode]) {
-        currentLevelNodes[pNode] = [];
-      }
-
-      currentLevelNodes[pNode].push(item);
+    Object.keys(childLevelObj).forEach(key => {
+      const pidValue = childLevelObj[key][pid];
+      parentLevelObj[pidValue] = parentLevelObj[pidValue] || {};
+      parentLevelObj[pidValue][children] = parentLevelObj[pidValue][children] || [];
+      parentLevelObj[pidValue][children].push(childLevelObj[key]);
     });
 
-    nowLevel -= 1;
+    result[maxLevel] = parentLevelObj;
   }
 
-  while (nowLevel > (minLevel - 1)) { // 2 > 0
-    buildData();
-  }
-
-  let tree = [];
-  currentLevelNodes.forEach(nodes => {
-    tree = tree.concat(nodes);
-  });
-
-  return tree;
-}
+  return Object.values(result[minLevel]);
+};

@@ -1,3 +1,52 @@
+function getMergedObject(keys, baseObj, distObject) {
+
+  if (Array.isArray(keys)) {
+    let isFit = true;
+
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (distObject[key] !== baseObj[key]) {
+        isFit = false;
+        break;
+      }
+    }
+    if (isFit) {
+      return { ...baseObj, ...distObject }
+    }
+  } else if (typeof keys === 'string') {
+    if (distObject[keys] === baseObj[keys]) {
+      return { ...baseObj, ...distObject }
+    }
+  } else if (typeof keys === 'function') {
+    const val = keys(baseObj)
+    if (val && keys(distObject) === val) {
+      return { ...baseObj, ...distObject }
+    }
+  }
+
+  return baseObj
+};
+
+function mergeObject(retArr, keys, baseObj, restCollection) {
+  let cloneBaseObj = { ...baseObj }
+
+  restCollection.forEach(distCollection => {
+    if (Array.isArray(distCollection)) {
+      distCollection.forEach(distObject => {
+        cloneBaseObj = getMergedObject(keys, cloneBaseObj, distObject)
+      })
+
+    } else if (Object.prototype.toString.call(distCollection) === '[object Object]') {
+      Object.values(distCollection).forEach(distObject => {
+        cloneBaseObj = getMergedObject(keys, cloneBaseObj, distObject)
+      })
+    }
+  })
+
+  retArr.push(cloneBaseObj)
+};
+
 /**
  * 按指定键合并多个集合
  *
@@ -32,71 +81,18 @@
  * // 按 (o) => o.dim1 合并
  * mergeCollection((o) => o.dim1, col1, col2, col3);
  */
-
-function assign(targetPar, ...parameters) {
-  const target = Object(targetPar);
-
-  parameters.forEach(source => {
-    Object.keys(source).forEach(key => {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        target[key] = source[key];
-      }
-    });
-  });
-
-  return target;
-};
-
 module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
-  if (!keys || !baseCollection || !restCollection) return baseCollection;
+  const retArr = [];
 
-  const result = [];
-  const arrayRestColl = [];
-  let baseColl = baseCollection;
-  let restColl = restCollection;
-  let keysArr = keys;
-
-  if (typeof baseCollection === 'object' && !Array.isArray(baseCollection)) {
-    baseColl = Object.values(baseCollection);
- }
-
-  restColl.forEach(item => {
-    if (typeof item === 'object' && !Array.isArray(item)) {
-      arrayRestColl.push(Object.values(item));
-    }
-  });
-
-  if (arrayRestColl.length) {
-    restColl = arrayRestColl;
+  if (Array.isArray(baseCollection)) {
+    baseCollection.forEach(baseObj => {
+      mergeObject(retArr, keys, baseObj, restCollection)
+    })
+  } else if (Object.prototype.toString.call(baseCollection) === '[object Object]') {
+    Object.values(baseCollection).forEach(baseObj => {
+      mergeObject(retArr, keys, baseObj, restCollection)
+    })
   }
 
-  if (typeof keys === 'string') {
-    keysArr = [keys];
-  }
-
-  baseColl.forEach(bi => {
-    let biTmp = bi;
-
-    restColl.forEach(rc => {
-      rc.forEach(ri => {
-        let match = false;
-
-        if (typeof keysArr === 'object' && Array.isArray(keysArr) && keysArr.every(key => (biTmp[key] === ri[key]))) {
-          match = true;
-        }
-
-        if (typeof keysArr === 'function' && (keysArr(ri) === keysArr(biTmp))) {
-          match = true;
-        }
-
-        if (match) {
-          biTmp = assign(biTmp, ri);
-        }
-      });
-    });
-
-    result.push(biTmp);
-  });
-
-  return result;
+  return retArr
 };
