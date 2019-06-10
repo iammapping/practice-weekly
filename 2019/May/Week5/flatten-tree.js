@@ -34,44 +34,49 @@
  *   }
  * ]
  */
-module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
-  const nodeByPid = {};
-  const tree = [];
-
-  let minLevel = 1;
-
-  function assignChildren(source) {
-    const node = source;
-    if (node[level] === minLevel) {
-      tree.push(node);
-    }
-
-    if (node[id] in nodeByPid) {
-      node[children] = nodeByPid[node[id]];
-    }
+module.exports = function flatten2tree(
+  flattenArr,
+  id = 'id',
+  pid = 'pid',
+  level = 'level',
+  children = 'children'
+) {
+  if (!Array.isArray(flattenArr) || !flattenArr.length) {
+    return flattenArr;
   }
 
-  flattenArr.forEach(node => {
-    const nodeLevel = node[level];
-    const nodePid = node[pid];
+  const result = {};
+  let maxLevel = 0;
+  let minLevel = 0;
+  flattenArr.forEach(item => {
+    const currentLevel = item[level];
 
-    if (nodeLevel < minLevel) {
-      minLevel = nodeLevel;
+    if (maxLevel === 0 || maxLevel < currentLevel) {
+      maxLevel = currentLevel;
+    }
+    if (minLevel === 0 || minLevel > currentLevel) {
+      minLevel = currentLevel;
     }
 
-    if (!Array.isArray(nodeByPid[nodePid])) {
-      nodeByPid[nodePid] = [];
-    }
-
-    nodeByPid[nodePid].push({...node});
+    result[currentLevel] = result[currentLevel] || {};
+    result[currentLevel][item[id]] = item;
   });
 
-  /* eslint no-restricted-syntax: "error" */
-  for (const nodePid in nodeByPid) {
-    if (Object.prototype.hasOwnProperty.call(nodeByPid, nodePid)) {
-      nodeByPid[nodePid].forEach(assignChildren);
-    }
+  while (maxLevel > minLevel) {
+    maxLevel -= 1;
+
+    const parentLevelObj = result[maxLevel];
+    const childLevelObj = result[maxLevel + 1];
+
+    Object.keys(childLevelObj).forEach(key => {
+      const pidValue = childLevelObj[key][pid];
+      parentLevelObj[pidValue] = parentLevelObj[pidValue] || {};
+      parentLevelObj[pidValue][children] = parentLevelObj[pidValue][children] || [];
+      parentLevelObj[pidValue][children].push(childLevelObj[key]);
+    });
+
+    result[maxLevel] = parentLevelObj;
   }
 
-  return tree;
+  return Object.values(result[minLevel]);
 };
