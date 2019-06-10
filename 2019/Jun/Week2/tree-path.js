@@ -49,7 +49,7 @@ const LOOKUPTYPE = {
  * ]
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
-  if (!tree) return [];
+  if (!tree || !predicate) return [];
 
   const lutp = lookupType;
   let predicateFn = predicate;
@@ -59,9 +59,22 @@ module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYP
     predicateFn = node => Object.keys(predicate).every(key => (typeof predicate[key] === 'function' ? predicate[key](node[key]) : node[key] === predicate[key]));
   }
 
+  function omit(object, deleteKeys = []) {
+    const newObj = Array.isArray(object) ? [] : {};
+
+    /* eslint no-restricted-syntax: "error" */
+    for (const key in object) {
+      if (Object.prototype.hasOwnProperty.call(object, key) && (deleteKeys.indexOf(key) === -1)) {
+        newObj[key] = (typeof object[key] === "object") ? omit(object[key], deleteKeys) : object[key];
+      }
+    }
+
+    return newObj;
+  }
+
   function passTree(node, path) {
-    const currentNode = JSON.parse(JSON.stringify(node));
-    if (currentNode.children) delete currentNode.children;
+    const currentNode = omit(node, ['children']);
+
     path.push(currentNode);
 
     if (lutp === LOOKUPTYPE.ONLY_LEAF && !node.children && predicateFn(node)) {
