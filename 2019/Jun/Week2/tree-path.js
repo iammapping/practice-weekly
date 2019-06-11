@@ -7,6 +7,57 @@ const LOOKUPTYPE = {
   WITHOUT_CHILDREN: 3,
 }
 
+function correspond(object, predicate) {
+  if (typeof predicate === 'function') {
+    return predicate(object)
+  }
+
+  let isConrrespond = true
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key in predicate) {
+    if (Object.prototype.hasOwnProperty.call(predicate, key)) {
+      const val = predicate[key]
+      if (typeof val === 'function') {
+        if(!val(object[key])){
+          isConrrespond = false
+          break
+        }
+      } else if (object[key] !== val) {
+        isConrrespond = false
+        break
+      }
+    }
+  }
+
+  return isConrrespond
+}
+
+function toUrl(retArr, tree, preUrlArr, predicate, lookupType) {
+  tree.forEach(item => {
+    const cloneItem = {...item}
+    delete cloneItem.children
+
+    const currentUrlArr = [...preUrlArr]
+    currentUrlArr.push(cloneItem)
+    if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN) {
+      if (correspond(item, predicate)){
+        retArr.push(currentUrlArr)
+      }
+    } else if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN) {
+      // 此节点满足，则此节点下的叶子节点全部满足
+      if (correspond(item, predicate)) {
+        toUrl(retArr, item.children, currentUrlArr, () => true, LOOKUPTYPE.ONLY_LEAF)
+      }
+    } else if (lookupType === LOOKUPTYPE.ONLY_LEAF) {
+      if (item.children) {
+        toUrl(retArr, item.children, currentUrlArr, predicate, lookupType)
+      } else if (correspond(item, predicate)){
+        retArr.push(currentUrlArr)
+      }
+    }
+  })
+}
+
 /**
  * 查找符合条件的树节点路径
  * @param   {array}     tree 树
@@ -49,7 +100,12 @@ const LOOKUPTYPE = {
  * ]
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
+  const retArr = []
 
+  toUrl(retArr, tree, [], predicate, lookupType)
+
+  console.log('retArr', retArr)
+  return retArr
 }
 
 module.exports.LOOKUPTYPE = LOOKUPTYPE;
