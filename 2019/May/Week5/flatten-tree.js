@@ -55,30 +55,77 @@ function arrayRowsKeyby(keys, arr) {
  *   }
  * ]
  */
-module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
-    if(!Array.isArray(flattenArr) || flattenArr.length === 0) return [];
+// module.exports = function flatten2tree(flattenArr, id = 'id', pid = 'pid', level = 'level', children = 'children') {
+//     if(!Array.isArray(flattenArr) || flattenArr.length === 0) return [];
 
-    const treeArr = [];
+//     const treeArr = [];
 
-    const arrKeyby = arrayRowsKeyby([level, id], flattenArr);
-    const descLevels = Object.keys(arrKeyby).sort((a, b) => b - a);
+//     const arrKeyby = arrayRowsKeyby([level, id], flattenArr);
+//     const descLevels = Object.keys(arrKeyby).sort((a, b) => b - a);
 
-    descLevels.forEach(lev => {
-        const pLev = lev - 1;
-        Object.keys(arrKeyby[lev]).forEach(idVal => {
-            const item = arrKeyby[lev][idVal];
-            const pidVal = item[pid];
+//     descLevels.forEach(lev => {
+//         const pLev = lev - 1;
+//         Object.keys(arrKeyby[lev]).forEach(idVal => {
+//             const item = arrKeyby[lev][idVal];
+//             const pidVal = item[pid];
 
-            if(pidVal === 0 && pLev === 0) { // 此处约定id必须是数字型
-                treeArr.push(item);
-                return;
-            }
-            if(!arrKeyby[pLev] || !arrKeyby[pLev][pidVal]) return;
+//             if(pidVal === 0 && pLev === 0) { // 此处约定id必须是数字型
+//                 treeArr.push(item);
+//                 return;
+//             }
+//             if(!arrKeyby[pLev] || !arrKeyby[pLev][pidVal]) return;
             
-            if(!arrKeyby[pLev][pidVal][children]) { arrKeyby[pLev][pidVal][children] = []; }
-            arrKeyby[pLev][pidVal][children].push(item);
-        });
+//             if(!arrKeyby[pLev][pidVal][children]) { arrKeyby[pLev][pidVal][children] = []; }
+//             arrKeyby[pLev][pidVal][children].push(item);
+//         });
+//     });
+
+//     return treeArr;
+// }
+
+module.exports = function flatten2tree(
+  flattenArr,
+  id = 'id',
+  pid = 'pid',
+  level = 'level',
+  children = 'children'
+) {
+  if (!Array.isArray(flattenArr) || !flattenArr.length) {
+    return flattenArr;
+  }
+
+  const result = {};
+  let maxLevel = 0;
+  let minLevel = 0;
+  flattenArr.forEach(item => {
+    const currentLevel = item[level];
+
+    if (maxLevel === 0 || maxLevel < currentLevel) {
+      maxLevel = currentLevel;
+    }
+    if (minLevel === 0 || minLevel > currentLevel) {
+      minLevel = currentLevel;
+    }
+
+    result[currentLevel] = result[currentLevel] || {};
+    result[currentLevel][item[id]] = item;
+  });
+
+  while (maxLevel > minLevel) {
+    maxLevel -= 1;
+
+    const parentLevelObj = result[maxLevel];
+    const childLevelObj = result[maxLevel + 1];
+
+    Object.keys(childLevelObj).forEach(key => {
+      const pidValue = childLevelObj[key][pid];
+      parentLevelObj[pidValue] = parentLevelObj[pidValue] || {};
+      parentLevelObj[pidValue][children] = parentLevelObj[pidValue][children] || [];
+      parentLevelObj[pidValue][children].push(childLevelObj[key]);
     });
 
-    return treeArr;
-}
+    result[maxLevel] = parentLevelObj;
+  }
+
+  return Object.values(result[minLevel]);
+};

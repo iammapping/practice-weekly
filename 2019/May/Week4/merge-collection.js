@@ -72,6 +72,55 @@ function arrayRowsKeybyGroup(keys, arr) {
     return rs    
 }
 
+function getMergedObject(keys, baseObj, distObject) {
+
+  if (Array.isArray(keys)) {
+    let isFit = true;
+
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      if (distObject[key] !== baseObj[key]) {
+        isFit = false;
+        break;
+      }
+    }
+    if (isFit) {
+      return { ...baseObj, ...distObject }
+    }
+  } else if (typeof keys === 'string') {
+    if (distObject[keys] === baseObj[keys]) {
+      return { ...baseObj, ...distObject }
+    }
+  } else if (typeof keys === 'function') {
+    const val = keys(baseObj)
+    if (val && keys(distObject) === val) {
+      return { ...baseObj, ...distObject }
+    }
+  }
+
+  return baseObj
+};
+
+function mergeObject(retArr, keys, baseObj, restCollection) {
+  let cloneBaseObj = { ...baseObj }
+
+  restCollection.forEach(distCollection => {
+    if (Array.isArray(distCollection)) {
+      distCollection.forEach(distObject => {
+        cloneBaseObj = getMergedObject(keys, cloneBaseObj, distObject)
+      })
+
+    } else if (Object.prototype.toString.call(distCollection) === '[object Object]') {
+      Object.values(distCollection).forEach(distObject => {
+        cloneBaseObj = getMergedObject(keys, cloneBaseObj, distObject)
+      })
+    }
+  })
+
+  retArr.push(cloneBaseObj)
+};
+
 /**
  * 按指定键合并多个集合
  *
@@ -107,55 +156,70 @@ function arrayRowsKeybyGroup(keys, arr) {
  * mergeCollection((o) => o.dim1, col1, col2, col3);
  */
 module.exports = function mergeCollection(keys, baseCollection, ...restCollection) {
-    if(!baseCollection || (!Array.isArray(baseCollection) && typeof baseCollection !== 'object' )) {
-        return [];
-    }
+    // if(!baseCollection || (!Array.isArray(baseCollection) && typeof baseCollection !== 'object' )) {
+    //     return [];
+    // }
 
-    let baseColl = [];
-    if(!Array.isArray(baseCollection)) {
-        Object.keys(baseCollection).forEach(key => baseColl.push(baseCollection[key]));
-    }else {
-        baseColl = baseCollection;
-    }
+    // let baseColl = [];
+    // if(!Array.isArray(baseCollection)) {
+    //     Object.keys(baseCollection).forEach(key => baseColl.push(baseCollection[key]));
+    // }else {
+    //     baseColl = baseCollection;
+    // }
 
-    if(!keys) return baseColl;
-    if(!restCollection || (!Array.isArray(restCollection) && typeof restCollection !== 'object' )) return baseColl;
+    // if(!keys) return baseColl;
+    // if(!restCollection || (!Array.isArray(restCollection) && typeof restCollection !== 'object' )) return baseColl;
 
-    let rkeys = keys;
-    if(typeof rkeys === 'string') {
-        rkeys = [rkeys];
-    }
+    // let rkeys = keys;
+    // if(typeof rkeys === 'string') {
+    //     rkeys = [rkeys];
+    // }
 
-    let restColl = [];
-    restCollection.forEach(o => {
-        if(Array.isArray(o)) {
-            restColl = restColl.concat(o);
-        }else {
-            const rc = [];
-            Object.keys(o).forEach(key => rc.push(o[key]));
-            restColl = restColl.concat(rc);
-        }
-    });
+    // let restColl = [];
+    // restCollection.forEach(o => {
+    //     if(Array.isArray(o)) {
+    //         restColl = restColl.concat(o);
+    //     }else {
+    //         const rc = [];
+    //         Object.keys(o).forEach(key => rc.push(o[key]));
+    //         restColl = restColl.concat(rc);
+    //     }
+    // });
 
-    const allColl = baseColl.concat(restColl);
-    const allCollKeybyGroup = arrayRowsKeybyGroup(rkeys, allColl);
+    // const allColl = baseColl.concat(restColl);
+    // const allCollKeybyGroup = arrayRowsKeybyGroup(rkeys, allColl);
 
-    const rs = [];
-    baseColl.forEach(o => {
-        const groupKeys = getValueKeys(o, rkeys);
-        const coll = getCollFromKeybyGroup(groupKeys, allCollKeybyGroup);
-        if(coll.length > 1) {
-            let r = {};
-            coll.forEach(c => {
-                // r = Object.assign(r, c);
-                // r = objectAssign(r, c);
-                r = objectMerge(r, c);
-            });
-            rs.push(r);
-        }else {
-            rs.push(o);
-        }
-    });
+    // const rs = [];
+    // baseColl.forEach(o => {
+    //     const groupKeys = getValueKeys(o, rkeys);
+    //     const coll = getCollFromKeybyGroup(groupKeys, allCollKeybyGroup);
+    //     if(coll.length > 1) {
+    //         let r = {};
+    //         coll.forEach(c => {
+    //             // r = Object.assign(r, c);
+    //             // r = objectAssign(r, c);
+    //             r = objectMerge(r, c);
+    //         });
+    //         rs.push(r);
+    //     }else {
+    //         rs.push(o);
+    //     }
+    // });
 
-    return rs;
+    // return rs;
+
+  const retArr = [];
+
+  if (Array.isArray(baseCollection)) {
+    baseCollection.forEach(baseObj => {
+      mergeObject(retArr, keys, baseObj, restCollection)
+    })
+  } else if (Object.prototype.toString.call(baseCollection) === '[object Object]') {
+    Object.values(baseCollection).forEach(baseObj => {
+      mergeObject(retArr, keys, baseObj, restCollection)
+    })
+  }
+
+  return retArr
+
 };
