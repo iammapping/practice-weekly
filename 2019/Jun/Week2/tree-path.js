@@ -38,7 +38,7 @@ function isBreak(node, predicate, lookupType, childAlwaysMatch = false) {
   return false;
 }
 
-function matchNodes(tree, predicate, lookupType, childAlwaysMatch = false) {
+function lookupTreeNodePath(tree, predicate, lookupType, childAlwaysMatch = false) {
   let rs = [];
   const brotherAlwaysMatch = childAlwaysMatch;
 
@@ -51,7 +51,7 @@ function matchNodes(tree, predicate, lookupType, childAlwaysMatch = false) {
     }
 
     if (!isBreak(node, predicate, lookupType, childAlwaysMatch)) {
-      const deepRs = matchNodes(node.children, predicate, lookupType, childAlwaysMatch);
+      const deepRs = lookupTreeNodePath(node.children, predicate, lookupType, childAlwaysMatch);
       deepRs.forEach((deepR, i) => {
         deepR.unshift(nd);
       });
@@ -106,7 +106,7 @@ function matchNodes(tree, predicate, lookupType, childAlwaysMatch = false) {
  * ]
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
-  return matchNodes(tree, predicate, lookupType);
+  return lookupTreeNodePath(tree, predicate, lookupType);
 }
 
 module.exports.LOOKUPTYPE = LOOKUPTYPE;
