@@ -51,7 +51,6 @@ const LOOKUPTYPE = {
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
   if (!tree || !predicate) return [];
 
-  const lutp = lookupType;
   let predicateFn = predicate;
   const paths = [];
 
@@ -60,12 +59,12 @@ module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYP
   }
 
   function omit(object, deleteKeys = []) {
-    const newObj = Array.isArray(object) ? [] : {};
+    const newObj = {};
 
     /* eslint no-restricted-syntax: "error" */
     for (const key in object) {
-      if (Object.prototype.hasOwnProperty.call(object, key) && (deleteKeys.indexOf(key) === -1)) {
-        newObj[key] = (typeof object[key] === "object") ? omit(object[key], deleteKeys) : object[key];
+      if (deleteKeys.indexOf(key) === -1) {
+        newObj[key] = object[key];
       }
     }
 
@@ -77,12 +76,12 @@ module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYP
 
     path.push(currentNode);
 
-    if (lutp === LOOKUPTYPE.ONLY_LEAF && !node.children && predicateFn(node)) {
+    if (lookupType === LOOKUPTYPE.ONLY_LEAF && !node.children && predicateFn(node)) {
       paths.push(path);
       return;
     }
 
-    if (lutp === LOOKUPTYPE.ALWAYS_CHILDREN && node.children && predicateFn(node)) {
+    if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN && node.children && predicateFn(node)) {
       node.children.forEach(cNode => {
         paths.push([].concat(path, [cNode]));
       });
@@ -90,7 +89,7 @@ module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYP
       return;
     }
 
-    if (lutp === LOOKUPTYPE.WITHOUT_CHILDREN && node.children && predicateFn(node)) {
+    if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN && node.children && predicateFn(node)) {
       paths.push([currentNode]);
       return;
     }
