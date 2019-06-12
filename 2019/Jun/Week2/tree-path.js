@@ -32,27 +32,27 @@ function correspond(object, predicate) {
   return isConrrespond
 }
 
-function toUrl(retArr, tree, preUrlArr, predicate, lookupType) {
+function toPath(retArr, tree, prePath, predicate, lookupType) {
   tree.forEach(item => {
     const cloneItem = {...item}
     delete cloneItem.children
 
-    const currentUrlArr = [...preUrlArr]
-    currentUrlArr.push(cloneItem)
+    const currentPath = [...prePath]
+    currentPath.push(cloneItem)
     if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN) {
       if (correspond(item, predicate)){
-        retArr.push(currentUrlArr)
+        retArr.push(currentPath)
       }
     } else if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN) {
       // 此节点满足，则此节点下的叶子节点全部满足
       if (correspond(item, predicate)) {
-        toUrl(retArr, item.children, currentUrlArr, () => true, LOOKUPTYPE.ONLY_LEAF)
+        toPath(retArr, item.children, currentPath, () => true, LOOKUPTYPE.ONLY_LEAF)
       }
     } else if (lookupType === LOOKUPTYPE.ONLY_LEAF) {
       if (item.children) {
-        toUrl(retArr, item.children, currentUrlArr, predicate, lookupType)
+        toPath(retArr, item.children, currentPath, predicate, lookupType)
       } else if (correspond(item, predicate)){
-        retArr.push(currentUrlArr)
+        retArr.push(currentPath)
       }
     }
   })
@@ -101,10 +101,7 @@ function toUrl(retArr, tree, preUrlArr, predicate, lookupType) {
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
   const retArr = []
-
-  toUrl(retArr, tree, [], predicate, lookupType)
-
-  console.log('retArr', retArr)
+  toPath(retArr, tree, [], predicate, lookupType)
   return retArr
 }
 
