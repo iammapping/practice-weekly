@@ -6,6 +6,57 @@ const LOOKUPTYPE = {
   ALWAYS_CHILDREN: 2,
   // 父节点满足，则忽略所有子节点
   WITHOUT_CHILDREN: 3,
+};
+
+function correspond(object, predicate) {
+  if (typeof predicate === 'function') {
+    return predicate(object);
+  }
+
+  let isConrrespond = true;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key in predicate) {
+    if (Object.prototype.hasOwnProperty.call(predicate, key)) {
+      const val = predicate[key];
+      if (typeof val === 'function') {
+        if (!val(object[key])) {
+          isConrrespond = false;
+          break;
+        }
+      } else if (object[key] !== val) {
+        isConrrespond = false;
+        break;
+      }
+    }
+  }
+
+  return isConrrespond;
+}
+
+function toPath(retArr, tree, prePath, predicate, lookupType) {
+  tree.forEach(item => {
+    const cloneItem = { ...item };
+    delete cloneItem.children;
+
+    const currentPath = [...prePath];
+    currentPath.push(cloneItem);
+    if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN) {
+      if (correspond(item, predicate)) {
+        retArr.push(currentPath);
+      }
+    } else if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN) {
+      // 此节点满足，则此节点下的叶子节点全部满足
+      if (correspond(item, predicate)) {
+        toPath(retArr, item.children, currentPath, () => true, LOOKUPTYPE.ONLY_LEAF);
+      }
+    } else if (lookupType === LOOKUPTYPE.ONLY_LEAF) {
+      if (item.children) {
+        toPath(retArr, item.children, currentPath, predicate, lookupType);
+      } else if (correspond(item, predicate)) {
+        retArr.push(currentPath);
+      }
+    }
+  });
 }
 
 /**
@@ -50,113 +101,9 @@ const LOOKUPTYPE = {
  * ]
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
-  function isMatch(node, pred) {
-    if (typeof pred === "function") {
-      return pred(node);
-    }
-
-    if (typeof pred === "object") {
-       let match = false;
-
-       /** eslint no-restricted-syntax: "error" */
-       for (const k in pred) {
-         if (Object.prototype.hasOwnProperty.call(pred, k)) {
-           if (typeof pred[k] === "function") {
-             match = pred[k](node[k]);
-           } else {
-             match = node[k] === pred[k];
-           }
-         }
-       }
-
-       return match;
-    }
-
-    return false;
-  }
-
-  function getParent(node, path) {
-    let parentIndex = -1;
-    const parent = path.find((sp, si) => {
-      const last = sp[sp.length - 1] || [];
-      if (last && last.id === node.pid) {
-        parentIndex = si;
-        return true;
-      }
-      return false;
-    });
-
-    return [parent, parentIndex];
-  }
-
-  function getPath(nodes, pred) {
-    const stack = [...nodes];
-    const path = [];
-    const pathIndex = [];
-
-    while (stack.length) {
-      const node = stack.pop();
-      const { pid, id, level, name } = node;
-      const newNode = { pid, id, level, name };
-      const [parent, parentIndex] = getParent(newNode, path);
-
-      if (node.children) {
-        for (let i = 0; i < node.children.length; i++) {
-          stack.push(node.children[i]);
-
-          let index = -1;
-          const match = isMatch(newNode, pred);
-          if (parentIndex !== -1) {
-            if (i === 0) {
-              path[parentIndex] = [...parent, newNode];
-            } else {
-              path.push([...parent, newNode]);
-            }
-
-            index = parentIndex;
-          } else {
-            path.push([newNode]);
-            index = path.length -1;
-          }
-
-          if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN && match) {
-            pathIndex.push(index);
-          }
-
-          if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN && match) {
-            pathIndex.push(index);
-            break;
-          }
-        }
-
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-
-
-      let index = -1;
-      if (parent && lookupType !== LOOKUPTYPE.WITHOUT_CHILDREN) {
-        parent.push(newNode);
-        index = parentIndex;
-      } else {
-        path.push([newNode]);
-        index = path.length -1;
-      }
-
-      if (lookupType === LOOKUPTYPE.ONLY_LEAF && isMatch(newNode, pred)) {
-        pathIndex.push(index);
-      }
-    }
-
-    const result = [];
-    while (pathIndex.length) {
-      result.push(path[pathIndex.pop()]);
-    }
-
-    return result;
-  }
-
-  return getPath(tree, predicate)
+  const retArr = [];
+  toPath(retArr, tree, [], predicate, lookupType);
+  return retArr;
 };
 
 module.exports.LOOKUPTYPE = LOOKUPTYPE;
