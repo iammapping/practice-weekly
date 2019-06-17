@@ -5,6 +5,57 @@ const LOOKUPTYPE = {
   ALWAYS_CHILDREN: 2,
   // 父节点满足，则忽略所有子节点
   WITHOUT_CHILDREN: 3,
+};
+
+function correspond(object, predicate) {
+  if (typeof predicate === 'function') {
+    return predicate(object);
+  }
+
+  let isConrrespond = true;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key in predicate) {
+    if (Object.prototype.hasOwnProperty.call(predicate, key)) {
+      const val = predicate[key];
+      if (typeof val === 'function') {
+        if (!val(object[key])) {
+          isConrrespond = false;
+          break;
+        }
+      } else if (object[key] !== val) {
+        isConrrespond = false;
+        break;
+      }
+    }
+  }
+
+  return isConrrespond;
+}
+
+function toPath(retArr, tree, prePath, predicate, lookupType) {
+  tree.forEach(item => {
+    const cloneItem = { ...item };
+    delete cloneItem.children;
+
+    const currentPath = [...prePath];
+    currentPath.push(cloneItem);
+    if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN) {
+      if (correspond(item, predicate)) {
+        retArr.push(currentPath);
+      }
+    } else if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN) {
+      // 此节点满足，则此节点下的叶子节点全部满足
+      if (correspond(item, predicate)) {
+        toPath(retArr, item.children, currentPath, () => true, LOOKUPTYPE.ONLY_LEAF);
+      }
+    } else if (lookupType === LOOKUPTYPE.ONLY_LEAF) {
+      if (item.children) {
+        toPath(retArr, item.children, currentPath, predicate, lookupType);
+      } else if (correspond(item, predicate)) {
+        retArr.push(currentPath);
+      }
+    }
+  });
 }
 
 /**
@@ -49,92 +100,9 @@ const LOOKUPTYPE = {
  * ]
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
-  const result = [];
-
-  if (!Array.isArray(tree) || !tree.length || ['function', 'object'].indexOf(typeof predicate) < 0) {
-    return result;
-  }
-
-  function checkItem(itemObj) {
-    let isMatched = true;
-
-    if (typeof predicate === 'object') {
-      Object.keys(predicate).forEach(key => {
-        if (typeof predicate[key] === 'function') {
-          if (!predicate[key](itemObj[key])) {
-            isMatched = false;
-          }
-        } else if (predicate[key] !== itemObj[key]) {
-          isMatched = false;
-        }
-      })
-    }
-
-    if (typeof predicate === 'function') {
-     if (!predicate(itemObj)) {
-       isMatched = false;
-     }
-    }
-
-    return isMatched;
-  }
-
-  function addMatchedItem(treeArr, currentIndex, resultItem, needCheck = true) {
-    const tmpResultItem = resultItem.concat();
-
-    treeArr.forEach(item => {
-      const tmpItem = Object.assign({}, item);
-      const childrenArr = tmpItem.children;
-
-      delete tmpItem.children;
-      tmpResultItem[currentIndex] = tmpItem;
-
-      const isMatched = checkItem(tmpItem);
-      const isHasChildren = childrenArr && Array.isArray(childrenArr);
-
-      if (lookupType === LOOKUPTYPE.ONLY_LEAF) {
-        if (isHasChildren) {
-          addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem);
-        } else if (isMatched) {
-          result.push(tmpResultItem.concat());
-        }
-      }
-
-      if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN) {
-        if (isMatched) {
-          result.push(tmpResultItem.concat());
-        } else if (isHasChildren){
-          addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem);
-        }
-      }
-
-      if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN) {
-        if (needCheck) {
-          if (isMatched) {
-            if (isHasChildren) {
-              addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem, false);
-            } else {
-              result.push(tmpResultItem.concat());
-            }
-          } else if (isHasChildren){
-            addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem);
-          }
-        }
-
-        if (!needCheck) {
-          if (isHasChildren) {
-            addMatchedItem(childrenArr, currentIndex + 1, tmpResultItem, false);
-          } else {
-            result.push(tmpResultItem.concat());
-          }
-        }
-      }
-    })
-  }
-
-  addMatchedItem(tree, 0, []);
-
-  return result;
-}
+  const retArr = [];
+  toPath(retArr, tree, [], predicate, lookupType);
+  return retArr;
+};
 
 module.exports.LOOKUPTYPE = LOOKUPTYPE;
