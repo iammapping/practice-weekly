@@ -5,6 +5,57 @@ const LOOKUPTYPE = {
   ALWAYS_CHILDREN: 2,
   // 父节点满足，则忽略所有子节点
   WITHOUT_CHILDREN: 3,
+};
+
+function correspond(object, predicate) {
+  if (typeof predicate === 'function') {
+    return predicate(object);
+  }
+
+  let isConrrespond = true;
+  // eslint-disable-next-line no-restricted-syntax
+  for (const key in predicate) {
+    if (Object.prototype.hasOwnProperty.call(predicate, key)) {
+      const val = predicate[key];
+      if (typeof val === 'function') {
+        if (!val(object[key])) {
+          isConrrespond = false;
+          break;
+        }
+      } else if (object[key] !== val) {
+        isConrrespond = false;
+        break;
+      }
+    }
+  }
+
+  return isConrrespond;
+}
+
+function toPath(retArr, tree, prePath, predicate, lookupType) {
+  tree.forEach(item => {
+    const cloneItem = { ...item };
+    delete cloneItem.children;
+
+    const currentPath = [...prePath];
+    currentPath.push(cloneItem);
+    if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN) {
+      if (correspond(item, predicate)) {
+        retArr.push(currentPath);
+      }
+    } else if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN) {
+      // 此节点满足，则此节点下的叶子节点全部满足
+      if (correspond(item, predicate)) {
+        toPath(retArr, item.children, currentPath, () => true, LOOKUPTYPE.ONLY_LEAF);
+      }
+    } else if (lookupType === LOOKUPTYPE.ONLY_LEAF) {
+      if (item.children) {
+        toPath(retArr, item.children, currentPath, predicate, lookupType);
+      } else if (correspond(item, predicate)) {
+        retArr.push(currentPath);
+      }
+    }
+  });
 }
 
 /**
@@ -49,65 +100,9 @@ const LOOKUPTYPE = {
  * ]
  */
 module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYPE.ONLY_LEAF) {
-  if (!tree || !predicate) return [];
-
-  let predicateFn = predicate;
-  const paths = [];
-
-  if (typeof predicate === 'object') {
-    predicateFn = node => Object.keys(predicate).every(key => (typeof predicate[key] === 'function' ? predicate[key](node[key]) : node[key] === predicate[key]));
-  }
-
-  function omit(object, deleteKeys = []) {
-    const newObj = {};
-
-    /* eslint no-restricted-syntax: "error" */
-    for (const key in object) {
-      if (deleteKeys.indexOf(key) === -1) {
-        newObj[key] = object[key];
-      }
-    }
-
-    return newObj;
-  }
-
-  function passTree(node, path) {
-    const currentNode = omit(node, ['children']);
-
-    path.push(currentNode);
-
-    if (lookupType === LOOKUPTYPE.ONLY_LEAF && !node.children && predicateFn(node)) {
-      paths.push(path);
-      return;
-    }
-
-    if (lookupType === LOOKUPTYPE.ALWAYS_CHILDREN && node.children && predicateFn(node)) {
-      node.children.forEach(cNode => {
-        paths.push([].concat(path, [cNode]));
-      });
-
-      return;
-    }
-
-    if (lookupType === LOOKUPTYPE.WITHOUT_CHILDREN && node.children && predicateFn(node)) {
-      paths.push([currentNode]);
-      return;
-    }
-
-    if (node.children) {
-      node.children.forEach(cNode => {
-        const newPatch = [].concat(path);
-        passTree(cNode, newPatch);
-      });
-    }
-  }
-
-  tree.forEach(node => {
-    const path = [];
-    passTree(node, path);
-  });
-
-  return paths;
-}
+  const retArr = [];
+  toPath(retArr, tree, [], predicate, lookupType);
+  return retArr;
+};
 
 module.exports.LOOKUPTYPE = LOOKUPTYPE;
