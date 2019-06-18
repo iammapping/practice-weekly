@@ -14,22 +14,16 @@
  */
 function CallChain(executor) {
     let props = [];
-    let hasCall = false;
-
     function proxy(exctor) {
         return new Proxy(exctor || {}, {
             get: (target, prop) => {
-                if (hasCall) {
-                    props = [];
-                    hasCall = false;
-                }
-
                 props.push(prop);
                 return proxy(target);
             },
-            apply: async (target, ctx, args) => {
-                hasCall = true;
-                await target(props.join('.'), args);
+            apply: (target, ctx, args) => {
+                const r = target(props.join('.'), args);
+                props = [];
+                return r;
             }
         });
     }
