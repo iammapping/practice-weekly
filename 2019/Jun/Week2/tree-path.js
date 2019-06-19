@@ -5,7 +5,7 @@ const LOOKUPTYPE = {
   ALWAYS_CHILDREN: 2,
   // 父节点满足，则忽略所有子节点
   WITHOUT_CHILDREN: 3,
-}
+};
 
 /**
  * 查找符合条件的树节点路径
@@ -144,6 +144,5 @@ module.exports = function lookupTreePath(tree, predicate, lookupType = LOOKUPTYP
     searchPath(tree, 0, []);
 
     return result;
-}
-
+};
 module.exports.LOOKUPTYPE = LOOKUPTYPE;

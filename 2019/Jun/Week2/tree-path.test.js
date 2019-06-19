@@ -100,6 +100,16 @@ describe('2019 Jun Week2 Test: tree-path', () => {
       [{ id: 2, pid: 0, name: 'b', level: 1 }, { id: 5, pid: 2, name: 'ba', level: 2 }],
       [{ id: 2, pid: 0, name: 'b', level: 1 }, { id: 6, pid: 2, name: 'bb', level: 2 }],
     ]);
+
+    expect(lookupTreePath(tree, node => node.name === 'a', ALWAYS_CHILDREN)).to.be.eql([
+      [{ id: 1, pid: 0, name: 'a', level: 1 }, { id: 3, pid: 1, name: 'aa', level: 2 }],
+      [
+        { id: 1, pid: 0, name: 'a', level: 1 },
+        { id: 4, pid: 1, name: 'ab', level: 2 },
+        { id: 8, pid: 4, name: 'aba', level: 3 },
+        { id: 9, pid: 8, name: 'abaa', level: 4 },
+      ],
+    ]);
   });
 
   it('lookup without children by fn', () => {
