@@ -18,6 +18,6 @@ module.exports = {
     'no-param-reassign': 0,
   },
   settings: {
-    polyfills: ['Object.assign', 'Object.values', 'fetch', 'promises', 'url'],
+    polyfills: ['Object.assign', 'Object.values', 'fetch', 'Promise', 'url', 'Proxy'],
   },
 };
