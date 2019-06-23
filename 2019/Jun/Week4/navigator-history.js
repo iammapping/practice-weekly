@@ -18,7 +18,7 @@ class NavigatorHistory {
     this.history[this.position] = url;
 
     if (this.isForwardAvailable()) {
-      this.history.splice(this.position);
+      this.history.splice(this.position + 1);
     }
   }
 
