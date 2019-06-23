@@ -13,32 +13,21 @@
  * args: [1, 2, 3]
  */
 function CallChain(executor) {
-  let methods = [];
+  const inputMethods = [];
 
-// eslint-disable-next-line compat/compat
-  return new Proxy({}, {
-    get: (targetTop, name) => {
-      methods.push(name);
-
-      return (() => {
-        // eslint-disable-next-line compat/compat
-        const oproxy = new Proxy(executor, {
-          get: (target, fnName) => {
-            methods.push(fnName);
-            return oproxy;
-          },
-          apply: (target, ctx, args) => {
-            const methodsPrams = [].concat(methods);
-            methods = [];
-
-            return target(methodsPrams.join('.'), args);
-          }
-        });
-
-        return oproxy;
-      })();
+  // eslint-disable-next-line compat/compat
+  return new Proxy(executor || {}, {
+    get(target, prop, receiver) {
+      inputMethods.push(prop);
+      return receiver;
+    },
+    async apply(target, thisArg, argArray) {
+      // eslint-disable-next-line no-return-await
+      return await target(inputMethods.splice(0, inputMethods.length).join('.'), argArray);
     }
   });
+
+
 }
 
 module.exports = CallChain;
