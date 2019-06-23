@@ -13,25 +13,21 @@
  * args: [1, 2, 3]
  */
 function CallChain(executor) {
-  if(!executor || typeof executor !== 'function') {
-    return () => {
-      throw new TypeError();
-    }
-  }
+  const inputMethods = [];
 
-  let methodArr = [];
-
-  return new Proxy(executor, {
-    get(target, property, receiver) {
-      methodArr.push(property);
+  // eslint-disable-next-line compat/compat
+  return new Proxy(executor || {}, {
+    get(target, prop, receiver) {
+      inputMethods.push(prop);
       return receiver;
     },
-    apply(target, ctx, args) {
-      const tmp = methodArr;
-      methodArr = [];
-      return target(tmp.join('.'), args);
+    async apply(target, thisArg, argArray) {
+      // eslint-disable-next-line no-return-await
+      return await target(inputMethods.splice(0, inputMethods.length).join('.'), argArray);
     }
   });
+
+
 }
 
 module.exports = CallChain;

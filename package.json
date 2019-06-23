@@ -24,6 +24,7 @@
     "eslint-plugin-compat": "^3.1.1",
     "eslint-plugin-import": "^2.17.2",
     "husky": "^2.3.0",
+    "lolex": "^4.1.0",
     "mocha": "^6.1.4",
     "sinon": "^7.3.2"
   },
