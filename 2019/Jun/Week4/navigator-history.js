@@ -3,17 +3,23 @@
  */
 class NavigatorHistory {
   constructor() {
-
+    this.history = [];
+    this.position = -1;
   }
 
   /**
    * 导航到某地址
    *
    * @param {any} url
-   * @memberof NavigatorHistory
+   * @memberOf NavigatorHistory
    */
   navigate(url) {
+    this.position += 1;
+    this.history[this.position] = url;
 
+    if (this.isForwardAvailable()) {
+      this.history = this.history.slice(0, this.position + 1);
+    }
   }
 
   /**
@@ -23,7 +29,11 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   back() {
+    if (!this.isBackAvailable()) {
+      return undefined;
+    }
 
+    return this.history[--this.position];
   }
 
   /**
@@ -33,17 +43,21 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isBackAvailable() {
-
+    return this.position > 0;
   }
 
   /**
    * 前进
    *
    * @returns {any} url
-   * @memberof NavigatorHistory
+   * @memberOf NavigatorHistory
    */
   forward() {
+    if (!this.isForwardAvailable()) {
+      return undefined;
+    }
 
+    return this.history[++this.position];
   }
 
   /**
@@ -53,7 +67,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isForwardAvailable() {
-
+    return this.position < this.history.length - 1;
   }
 
   /**
@@ -63,7 +77,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   current() {
-
+    return this.history[this.position];
   }
 }
 
