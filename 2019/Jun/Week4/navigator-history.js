@@ -3,7 +3,8 @@
  */
 class NavigatorHistory {
   constructor() {
-
+    this.urls = [];
+    this.currentIndex = -1;
   }
 
   /**
@@ -13,7 +14,8 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   navigate(url) {
-
+    this.currentIndex += 1;
+    this.urls[this.currentIndex] = url;
   }
 
   /**
@@ -23,7 +25,11 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   back() {
-
+    if(this.isBackAvailable()){
+        this.currentIndex -= 1;
+        return this.urls[this.currentIndex];
+    }
+    return undefined;
   }
 
   /**
@@ -33,7 +39,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isBackAvailable() {
-
+    return this.currentIndex>0;
   }
 
   /**
@@ -43,7 +49,11 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   forward() {
-
+      if(this.isForwardAvailable()){
+        this.currentIndex += 1;
+        return this.urls[this.currentIndex];
+      }
+      return undefined;
   }
 
   /**
@@ -53,7 +63,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isForwardAvailable() {
-
+    return this.currentIndex<this.urls.length-1;
   }
 
   /**
@@ -63,7 +73,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   current() {
-
+    return this.urls[this.currentIndex];
   }
 }
 
