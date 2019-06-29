@@ -16,5 +16,6 @@ describe('2019 Jun Week5 Test: evaluate-expression', () => {
   it('evaluate multiple values with precedence modified', () => {
     expect(evaluate('100 * ( 2 + 12 )')).to.be.eql(1400);
     expect(evaluate('100 * ( 2 + 12 ) / 14')).to.be.eql(100);
+    expect(evaluate('(1 + 3 * 4 - 5) * (3 + 6 * 7) + 8')).to.be.eql(368);
   });
 });

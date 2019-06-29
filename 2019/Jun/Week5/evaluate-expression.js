@@ -72,6 +72,10 @@ class NumberStack {
         }
     }
 
+    hasPreNode() {
+        return this.curNode !== null && this.curNode.preNode !== null;
+    }
+
     isLeftBracketPreNode() {
         return this.curNode && this.curNode.preNode && this.curNode.preNode.data === '(';
     }
@@ -149,8 +153,11 @@ module.exports = function evaluate(expression) {
         if(!Number.isNaN(Number(data)) || data === '(') { // is number or is '('
             numberStack.push(new NumberNode(data));
         } else if (data === ')') {
-            const operatorNode = operatorStack.pop();
-            numberStack.calculate(operatorNode.operator);
+            while (numberStack.hasPreNode() && !numberStack.isLeftBracketPreNode()) {
+                const operatorNode = operatorStack.pop();
+                numberStack.calculate(operatorNode.operator);
+            }
+            
             numberStack.removeLeftBracket();
         } else { // + 、- 、* 、/
             if (!operatorStack.isHigher(data) && !numberStack.isLeftBracketPreNode()) {
