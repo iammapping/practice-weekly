@@ -14,7 +14,7 @@ function precedence(opt) {
 }
 
 function peek(stack) {
-  return stack.slice(-1)[0];
+  return stack[stack.length - 1];
 }
 
 function basicOperation(n1, n2, opt) {
