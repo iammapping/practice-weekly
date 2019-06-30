@@ -20,9 +20,9 @@ function peek(stack) {
 function basicOperation(n1, n2, opt) {
   switch (opt) {
     case "+":
-      return n1 + n2;
+      return n2 + n1;
     case "-":
-      return n1 - n2;
+      return n2 - n1;
     case "*":
       return n2 * n1;
     case "/":
