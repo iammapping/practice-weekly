@@ -12,10 +12,12 @@ module.exports = function evaluate(expression) {
 
   function compute(express){
     let result = 0;
-    const parenthesizedExpress = express.match(/\(.*\)/g);
+    const parenthesizedExpress = express.match(/\(.*?\)/g);
 
     if (Array.isArray(parenthesizedExpress) && parenthesizedExpress.length) {
-      express = express.replace(/\(.*\)/g, compute(parenthesizedExpress[0].substring(1, parenthesizedExpress[0].length - 1)))
+      parenthesizedExpress.forEach(item => {
+        express = express.replace(item, compute(item.substring(1, item.length - 1)))
+      })
     }
 
     express = express.replace('-', '+-');
