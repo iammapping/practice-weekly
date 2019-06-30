@@ -3,8 +3,8 @@
  */
 class NavigatorHistory {
   constructor() {
-    this.steps = [];
-    this.currentStepIndex = -1;
+    this.currIndex = -1;
+    this.histories = [];
   }
 
   /**
@@ -14,8 +14,9 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   navigate(url) {
-    this.currentStepIndex += 1;
-    this.steps[this.currentStepIndex] = url;
+    this.histories.splice(this.currIndex + 1);
+    this.histories.push(url);
+    this.currIndex++;
   }
 
   /**
@@ -25,13 +26,12 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   back() {
-    const result = this.steps[this.currentStepIndex - 1];
-
-    if(this.currentStepIndex > 0) {
-      this.currentStepIndex -= 1;
+    if (this.isBackAvailable()) {
+      this.currIndex--;
+      return this.current();
     }
 
-    return result;
+    return undefined;
   }
 
   /**
@@ -41,7 +41,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isBackAvailable() {
-    return this.currentStepIndex > 0;
+    return this.currIndex > 0;
   }
 
   /**
@@ -51,13 +51,12 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   forward() {
-    const result = this.steps[this.currentStepIndex + 1];
-
-    if(this.currentStepIndex < this.steps.length - 1) {
-      this.currentStepIndex += 1;
+    if (this.isForwardAvailable()) {
+      this.currIndex++;
+      return this.current();
     }
 
-    return result;
+    return undefined;
   }
 
   /**
@@ -67,7 +66,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isForwardAvailable() {
-    return this.currentStepIndex < this.steps.length - 1;
+    return this.currIndex < this.histories.length - 1;
   }
 
   /**
@@ -77,7 +76,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   current() {
-    return this.steps[this.currentStepIndex];
+    return this.histories[this.currIndex];
   }
 }
 
