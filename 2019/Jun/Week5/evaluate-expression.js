@@ -32,6 +32,11 @@ function basicOperation(n1, n2, opt) {
   }
 }
 
+function isNumber(str="") {
+    // [0-9]
+    return str.charCodeAt() >= 48 && str.charCodeAt() <= 57;
+}
+
 
 /**
  * 计算四则运算表达式的结果
@@ -47,18 +52,19 @@ module.exports = function evaluate(expression) {
   const opts = [];
 
   for (let i = 0; i < expression.length; i++) {
-    if (expression.charCodeAt(i) >= 48 && expression.charCodeAt(i) <= 57) {
-
+    if (isNumber(expression[i])) {
       let numberString = "";
+
       while (i < expression.length) {
         numberString += expression[i];
 
-        if (!(expression.charCodeAt(i + 1) >= 48 && expression.charCodeAt(i + 1) <= 57)) {
+        if (!isNumber(expression[i + 1])) {
           break;
         }
 
         i++;
       }
+
       values.push(parseInt(numberString, 10));
 
     } else if (expression[i] === '(') {
@@ -70,7 +76,7 @@ module.exports = function evaluate(expression) {
       }
       opts.pop();
 
-    } else if (expression[i] === '*' || expression[i] === '/' || expression[i] === '+' || expression[i] === '-') {
+    } else if (['+', '-', '*', '/'].indexOf(expression[i]) !== -1) {
       while (opts.length && peek(opts) !== '(' && precedence(peek(opts)) > precedence(expression[i])) {
         values.push(basicOperation(values.pop(), values.pop(), opts.pop()));
       }
