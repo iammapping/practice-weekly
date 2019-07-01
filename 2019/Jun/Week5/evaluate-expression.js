@@ -16,6 +16,21 @@ function expression2nodes(expression) {
     return nodes;
 }
 
+function operate(leftNumber, operator, rightNumber) {
+    switch (operator) {
+        case '+':
+            return leftNumber + rightNumber;
+        case '-':
+            return leftNumber - rightNumber;
+        case '*':
+            return leftNumber * rightNumber;
+        case '/':
+            return leftNumber / rightNumber;
+        default:
+            return leftNumber;
+    }
+}
+
 class NumberNode {
     constructor(data) {
         this.data = data;
@@ -57,21 +72,6 @@ class NumberStack {
         return popNode;
     }
 
-    static operate(leftNumber, operator, rightNumber) {
-        switch (operator) {
-            case '+':
-                return leftNumber + rightNumber;
-            case '-':
-                return leftNumber - rightNumber;
-            case '*':
-                return leftNumber * rightNumber;
-            case '/':
-                return leftNumber / rightNumber;
-            default:
-                return leftNumber;
-        }
-    }
-
     hasPreNode() {
         return this.curNode !== null && this.curNode.preNode !== null;
     }
@@ -81,7 +81,7 @@ class NumberStack {
     }
 
     calculate(operator) {
-        this.curNode.preNode.data = NumberStack.operate(Number(this.curNode.preNode.data), operator, Number(this.curNode.data));
+        this.curNode.preNode.data = operate(Number(this.curNode.preNode.data), operator, Number(this.curNode.data));
         this.pop();
     }
 
@@ -103,7 +103,7 @@ class NumberStack {
             return Number(this.curNode.data);
         }
 
-        const r = NumberStack.operate(Number(this.curNode.preNode.data), operator, Number(this.curNode.data));
+        const r = operate(Number(this.curNode.preNode.data), operator, Number(this.curNode.data));
         this.curNode = null;
 
         return r;
@@ -134,6 +134,13 @@ class OperatorStack {
     }
 }
 
+function calculate(numberStack, operatorStack) {
+    const operatorNode = operatorStack.pop();
+    if (operatorNode !== null) {
+        numberStack.calculate(operatorNode.operator);
+    }
+}
+
 /**
  * 计算四则运算表达式的结果
  *
@@ -154,15 +161,13 @@ module.exports = function evaluate(expression) {
             numberStack.push(new NumberNode(data));
         } else if (data === ')') {
             while (numberStack.hasPreNode() && !numberStack.isLeftBracketPreNode()) {
-                const operatorNode = operatorStack.pop();
-                numberStack.calculate(operatorNode.operator);
+                calculate(numberStack, operatorStack);
             }
             
             numberStack.removeLeftBracket();
         } else { // + 、- 、* 、/
             if (!operatorStack.isHigher(data) && !numberStack.isLeftBracketPreNode()) {
-                const operatorNode = operatorStack.pop();
-                numberStack.calculate(operatorNode.operator);
+                calculate(numberStack, operatorStack);
             }
 
             operatorStack.push(new OperatorNode(data));
@@ -170,11 +175,8 @@ module.exports = function evaluate(expression) {
     });
 
     // Must be calculated again at the end
-    let operatorNode = operatorStack.pop();
-    if (operatorNode !== null) {
-        numberStack.calculate(operatorNode.operator);
-    }
+    calculate(numberStack, operatorStack);
 
-    operatorNode = operatorStack.pop();
+    const operatorNode = operatorStack.pop();
     return numberStack.getResult(operatorNode === null ? '' : operatorNode.operator);
 };
