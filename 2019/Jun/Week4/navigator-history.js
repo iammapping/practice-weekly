@@ -3,7 +3,8 @@
  */
 class NavigatorHistory {
   constructor() {
-
+    this.currIndex = -1;
+    this.histories = [];
   }
 
   /**
@@ -13,7 +14,9 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   navigate(url) {
-
+    this.histories.splice(this.currIndex + 1);
+    this.histories.push(url);
+    this.currIndex++;
   }
 
   /**
@@ -23,7 +26,12 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   back() {
-
+    if (this.isBackAvailable()) {
+      this.currIndex--;
+      return this.current();
+    }
+    
+    return undefined;
   }
 
   /**
@@ -33,7 +41,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isBackAvailable() {
-
+    return this.currIndex > 0;
   }
 
   /**
@@ -43,7 +51,12 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   forward() {
+    if (this.isForwardAvailable()) {
+      this.currIndex++;
+      return this.current();
+    }
 
+    return undefined;
   }
 
   /**
@@ -53,7 +66,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isForwardAvailable() {
-
+    return this.currIndex < this.histories.length - 1;
   }
 
   /**
@@ -63,7 +76,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   current() {
-
+    return this.histories[this.currIndex];
   }
 }
 
