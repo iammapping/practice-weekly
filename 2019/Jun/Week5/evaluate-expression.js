@@ -1,3 +1,43 @@
+function precedence(opt) {
+  switch (opt) {
+    case "+":
+    case "-":
+      return 1;
+    case "*":
+    case "/":
+      return 2;
+    case "(":
+      return 3;
+    default:
+      return 0;
+  }
+}
+
+function peek(stack) {
+  return stack[stack.length - 1];
+}
+
+function basicOperation(n1, n2, opt) {
+  switch (opt) {
+    case "+":
+      return n2 + n1;
+    case "-":
+      return n2 - n1;
+    case "*":
+      return n2 * n1;
+    case "/":
+      return n2 / n1;
+    default:
+      return 0;
+  }
+}
+
+function isNumber(str="") {
+  // [0-9]
+  return str.charCodeAt() >= 48 && str.charCodeAt() <= 57;
+}
+
+
 /**
  * 计算四则运算表达式的结果
  *
@@ -8,53 +48,45 @@
  * 7
  */
 module.exports = function evaluate(expression) {
-  expression = expression.replace(/ /g, '');
+  const values = [];
+  const opts = [];
 
-  function compute(express){
-    let result = 0;
-    const parenthesizedExpress = express.match(/\(.*?\)/g);
+  for (let i = 0; i < expression.length; i++) {
+    if (isNumber(expression[i])) {
+      let numberString = "";
 
-    if (Array.isArray(parenthesizedExpress) && parenthesizedExpress.length) {
-      parenthesizedExpress.forEach(item => {
-        express = express.replace(item, compute(item.substring(1, item.length - 1)))
-      })
-    }
+      while (i < expression.length) {
+        numberString += expression[i];
 
-    express = express.replace('-', '+-');
-    const addArr = express.split('+');
-
-    for(let i = 0; i < addArr.length; i += 1) {
-      if (addArr[i].indexOf('*') < 0 && addArr[i].indexOf('-') < 0) {
-        result += Number(addArr[i]);
-      } else {
-        let multiplyResult = 1;
-        const multiplyArr= addArr[i].split('*');
-
-        for(let j = 0; j < multiplyArr.length; j += 1) {
-          if (multiplyArr[j].indexOf('/') < 0) {
-            multiplyResult *= multiplyArr[j];
-          } else {
-            let divideResult = 0;
-            const divideArr = multiplyArr[j].split('/');
-
-            divideArr.forEach(divideItem => {
-              if (divideResult === 0) {
-                divideResult = divideItem;
-              } else {
-                divideResult /= Number(divideItem);
-              }
-            });
-
-            multiplyResult *= divideResult;
-          }
+        if (!isNumber(expression[i + 1])) {
+          break;
         }
 
-        result += multiplyResult;
+        i++;
       }
-    }
 
-    return result;
+      values.push(parseInt(numberString, 10));
+
+    } else if (expression[i] === '(') {
+      opts.push(expression[i]);
+
+    } else if (expression[i] === ')') {
+      while (opts.length && peek(opts) !== '(') {
+        values.push(basicOperation(values.pop(), values.pop(), opts.pop()));
+      }
+      opts.pop();
+
+    } else if (['+', '-', '*', '/'].indexOf(expression[i]) !== -1) {
+      while (opts.length && peek(opts) !== '(' && precedence(peek(opts)) > precedence(expression[i])) {
+        values.push(basicOperation(values.pop(), values.pop(), opts.pop()));
+      }
+      opts.push(expression[i]);
+    }
   }
 
-  return compute(expression);
+  while (opts.length) {
+    values.push(basicOperation(values.pop(), values.pop(), opts.pop()));
+  }
+
+  return values.pop();
 };
