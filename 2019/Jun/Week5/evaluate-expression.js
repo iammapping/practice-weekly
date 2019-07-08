@@ -1,61 +1,42 @@
-function Node() {
-  this.data = null;
-  this.next = null;
-}
-
-function Stack() {
-  this.top = new Node;
-  this.count = 0;
-};
-
-function initStack(s) {
-  s.top = null;
-  s.count = 0;
-
-  return true;
-}
-
-function isEmptyStack(s) {
-  return s.count === 0;
-}
-
-function push(s, e) {
-  const n = new Node();
-  n.data = e;
-  n.next = s.top;
-  s.top = n;
-  s.count++;
-}
-
-function getTop(s) {
-  return s.top.data;
-}
-
-function priority(o) {
-  switch (o) {
-    case '(':
-      return 3;
-    case '*':
-    case '/':
-      return 2;
-    case '+':
-    case '-':
+function precedence(opt) {
+  switch (opt) {
+    case "+":
+    case "-":
       return 1;
+    case "*":
+    case "/":
+      return 2;
+    case "(":
+      return 3;
     default:
       return 0;
   }
 }
 
-function pop(s) {
-  if (!s.top) return undefined;
-
-  const node = s.top;
-  const e = node.data;
-  s.top = node.next;
-  s.count--;
-
-  return e;
+function peek(stack) {
+  return stack[stack.length - 1];
 }
+
+function basicOperation(n1, n2, opt) {
+  switch (opt) {
+    case "+":
+      return n2 + n1;
+    case "-":
+      return n2 - n1;
+    case "*":
+      return n2 * n1;
+    case "/":
+      return n2 / n1;
+    default:
+      return 0;
+  }
+}
+
+function isNumber(str="") {
+  // [0-9]
+  return str.charCodeAt() >= 48 && str.charCodeAt() <= 57;
+}
+
 
 /**
  * 计算四则运算表达式的结果
@@ -67,62 +48,45 @@ function pop(s) {
  * 7
  */
 module.exports = function evaluate(expression) {
-  const numStack = new Stack();
-  const optStack = new Stack();
-  const str = String(expression.replace(/\s*/g, ''));
-  let i = 0;
-  let tmp = 0;
-  let j;
+  const values = [];
+  const opts = [];
 
-  initStack(numStack);
-  initStack(optStack);
+  for (let i = 0; i < expression.length; i++) {
+    if (isNumber(expression[i])) {
+      let numberString = "";
 
-  /* eslint no-continue:0 */
-  while (str[i] !== undefined || !isEmptyStack(optStack)) {
-    if (str[i] >= '0' && str[i] <= '9') {
-      tmp = tmp * 10 + parseInt(str[i], 10);
-      i++;
+      while (i < expression.length) {
+        numberString += expression[i];
 
-      if (str[i] < '0' || str[i] > '9' || str[i] === undefined) {
-        push(numStack, tmp);
-        tmp = 0;
-      }
-    }
-    else {
-      if (isEmptyStack(optStack) || (getTop(optStack) === '(' && str[i] !== ')') || priority(str[i]) > priority(getTop(optStack))) {
-        push(optStack, str[i]);
-        i++;
-        continue;
-      }
-
-      if (getTop(optStack) === '(' && str[i] === ')') {
-        pop(optStack);
-        i++;
-        continue;
-      }
-
-      if ((str[i] === undefined && !isEmptyStack(optStack)) || (str[i] === ')' && getTop(optStack) !== '(') || priority(str[i]) <= priority(getTop(optStack))) {
-        switch (pop(optStack)) {
-          case '+':
-            push(numStack, pop(numStack) + pop(numStack));
-            break;
-          case '-':
-            j = pop(numStack);
-            push(numStack, pop(numStack) - j);
-            break;
-          case '*':
-            push(numStack, pop(numStack) * pop(numStack));
-            break;
-          case '/':
-            j = pop(numStack);
-            push(numStack, pop(numStack) / j);
-            break
-          default:
-            return undefined;
+        if (!isNumber(expression[i + 1])) {
+          break;
         }
+
+        i++;
       }
+
+      values.push(parseInt(numberString, 10));
+
+    } else if (expression[i] === '(') {
+      opts.push(expression[i]);
+
+    } else if (expression[i] === ')') {
+      while (opts.length && peek(opts) !== '(') {
+        values.push(basicOperation(values.pop(), values.pop(), opts.pop()));
+      }
+      opts.pop();
+
+    } else if (['+', '-', '*', '/'].indexOf(expression[i]) !== -1) {
+      while (opts.length && peek(opts) !== '(' && precedence(peek(opts)) > precedence(expression[i])) {
+        values.push(basicOperation(values.pop(), values.pop(), opts.pop()));
+      }
+      opts.push(expression[i]);
     }
   }
 
-  return pop(numStack);
+  while (opts.length) {
+    values.push(basicOperation(values.pop(), values.pop(), opts.pop()));
+  }
+
+  return values.pop();
 };
