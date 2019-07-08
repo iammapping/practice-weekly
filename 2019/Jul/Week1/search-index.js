@@ -1,17 +1,5 @@
-function intersection(a, b) { // 交集
-  const result = [];
-
-  for (let i = 0; i < b.length; i++) {
-    const temp = b[i];
-    for (let j = 0; j < a.length; j++) {
-      if (temp === a[j]) {
-        result.push(temp);
-        break;
-      }
-    }
-  }
-
-  return result;
+function intersection(a, b) {// 交集
+  return [...new Set([...new Set(a)].filter(x => new Set(b).has(x)))];
 }
 
 /**
@@ -28,8 +16,8 @@ module.exports = class SearchIndex {
       queryTokenizer: q => String(q).split(/\s+/),
     }, options);
 
-    this.dicts = {};
-    this.identifyMaps = {};
+    this.dicts = {};// 词典
+    this.identifyMaps = {};// 源数据索引
   }
 
   add(data) {
@@ -48,32 +36,31 @@ module.exports = class SearchIndex {
   }
 
   search(query) {
-    let result = [];
-
     const queies = this.options.queryTokenizer(query);
     if (queies.indexOf(query) === -1) queies.push(query);
 
-    queies.forEach(que => {
-      const r = [];
+    const result = [];
+    let identifies = [];
 
-      const noReatIdf = [];
+    queies.forEach(que => {
+      const identifiesTmp = [];
+
       Object.keys(this.dicts).forEach(key => {
-        if (key === que || key.search(query) === 0) {
+        if (key === que || key.search(query) === 0) {// 匹配规则: 全等 或 前部分相等
           (this.dicts[key] || []).forEach(identify => {
-            if (noReatIdf.indexOf(identify) === -1) {
-              r.push(this.identifyMaps[identify]);
-              noReatIdf.push(identify);
-            }
+            if (identifiesTmp.indexOf(identify) === -1) identifiesTmp.push(identify);
           });
         }
-      })
+      });
 
-      if (result.length === 0) {
-        result = r;
-      } else if(r.length) {
-          result = intersection(result, r);
+      if (!identifies.length) {// identifies做交集
+        identifies = identifiesTmp;
+      } else if (identifiesTmp.length) {
+        identifies = intersection(identifies, identifiesTmp);
       }
     });
+
+    identifies.sort((a, b) => a - b).forEach(identify => result.push(this.identifyMaps[identify]));// 数字排序，字符不变
 
     return result;
   }

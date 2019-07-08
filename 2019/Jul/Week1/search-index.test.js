@@ -62,7 +62,7 @@ describe('2019 Jul Week1 Test: search-index', () => {
       expect(searchIndex.search('tag1')).to.be.eql([{id: 1, tags: 'tag1,tag2'}]);
       expect(searchIndex.search('tag2')).to.be.eql([{id: 1, tags: 'tag1,tag2'}, {id: 3, tags: 'tag2,tag5'}]);
       expect(searchIndex.search('tag3 tag4')).to.be.eql([{id: 2, tags: 'tag3,tag4'}]);
-      expect(searchIndex.search('tag')).to.be.eql([{id: 1, tags: 'tag1,tag2'}, {id: 3, tags: 'tag2,tag5'}, {id: 2, tags: 'tag3,tag4'}]);
+      expect(searchIndex.search('tag')).to.be.eql([{id: 1, tags: 'tag1,tag2'}, {id: 2, tags: 'tag3,tag4'}, {id: 3, tags: 'tag2,tag5'}]);
       expect(searchIndex.search('tagxx')).to.be.eql([]);
       expect(searchIndex.search('tag1 tag2 tag3')).to.be.eql([]);
     });
