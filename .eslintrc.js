@@ -16,6 +16,7 @@ module.exports = {
     'no-unused-expressions': 0,
     'no-plusplus': 0,
     'no-param-reassign': 0,
+    'no-restricted-syntax': 0
   },
   settings: {
     polyfills: ['Object.assign', 'Object.values', 'fetch', 'Promise', 'url', 'Proxy'],
