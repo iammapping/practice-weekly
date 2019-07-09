@@ -1,5 +1,12 @@
+/* eslint-disable compat/compat */
 /* eslint-disable no-loop-func */
 /* eslint-disable no-restricted-syntax */
+
+const NodeType = {
+  root: Symbol('root'),
+  other: Symbol('other'),
+}
+
 class Node {
   constructor(value) {
     this.value = value
@@ -29,7 +36,7 @@ class Node {
     }
 
     let remain = null
-    if (this.getValue() === 'root') {
+    if (this.getValue() === NodeType.root) {
       remain = str
     } else if(str.length > 1) {
       remain = str.substring(1)
@@ -108,7 +115,7 @@ module.exports = class SearchIndex {
     }, options);
 
     this.data = []
-    this.rootNode = new Node('root')
+    this.rootNode = new Node(NodeType.root)
   }
 
   add(data) {
