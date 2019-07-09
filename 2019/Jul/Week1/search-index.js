@@ -28,29 +28,29 @@ class Node {
       this.dataIndexs.push(index)
     }
 
-    let left = null
+    let remain = null
     if (this.getValue() === 'root') {
-      left = str
+      remain = str
     } else if(str.length > 1) {
-      left = str.substring(1)
+      remain = str.substring(1)
     }
 
-    if (left) {
-      const leftFirstChar = left.substring(0, 1)
+    if (remain) {
+      const remainFirstChar = remain.substring(0, 1)
 
       let child = null
       for(const childNode of this.children) {
-        if (childNode.getValue() === leftFirstChar) {
+        if (childNode.getValue() === remainFirstChar) {
           child = childNode
           break
         }
       }
 
       if (child) {
-        child.add(index, left)
+        child.add(index, remain)
       } else {
-        child = new Node(leftFirstChar)
-        child.add(index, left)
+        child = new Node(remainFirstChar)
+        child.add(index, remain)
         this.children.push(child)
       }
     }
@@ -59,16 +59,15 @@ class Node {
   search(str) {
     const isLast = str.length === 1
     const char = str.substring(0, 1)
-    const left = isLast ? null : str.substring(1)
+    const remain = isLast ? null : str.substring(1)
 
-    // eslint-disable-next-line no-restricted-syntax
     for(const child of this.children) {
       if (child.getValue() === char) {
         if (isLast) {
           return child.getDataIndexs()
         } 
 
-        return child.search(left)
+        return child.search(remain)
       }
     }
 
@@ -134,13 +133,14 @@ module.exports = class SearchIndex {
     const retArr = []
     let indexArr = []
 
-
     for(const token of this.options.queryTokenizer(query)) {
       const nextIndexArr = this.rootNode.search(token)
-      // 第一次循环
-      if (indexArr.length === 0) {
-        indexArr = nextIndexArr
-      } else if(this.options.intersection){
+
+      if(this.options.intersection){
+        // 第一次循环
+        if (indexArr.length === 0) {
+          indexArr = nextIndexArr
+        }
         // 取交集
         const intersection = []
         indexArr.forEach(index => {
@@ -149,6 +149,10 @@ module.exports = class SearchIndex {
           }
         })
         indexArr = intersection
+
+        if (indexArr.length === 0) {
+          break;
+        }
       } else {
         // 取并集
         nextIndexArr.forEach(index => {
@@ -157,16 +161,12 @@ module.exports = class SearchIndex {
           }
         })
       }
-
-      if (indexArr.length === 0) {
-        break;
-      }
     }
 
     indexArr.forEach(index => {
       retArr.push(this.data[index])
-      
     })
+
     return retArr
   }
 };
