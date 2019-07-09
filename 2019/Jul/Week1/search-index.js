@@ -15,9 +15,8 @@ module.exports = class SearchIndex {
 
     // 字符串数组生成的查找树的头节点
     this.header = {
-      value:null,
-      index:[],
-      child:[]
+      index:[], // 记录对象的索引identify()，根据索引查找最后符合条件的对象
+      children:{}
     }
   }
 
@@ -49,45 +48,32 @@ module.exports = class SearchIndex {
     return res;
   }
 
-  // 判断一个字符是否在子节点中
-  static inChildNode(treeNode, char) {
-    for(let i = 0; i < treeNode.length; i++){
-      if(treeNode[i].value === char){
-        return i;
-      }
-    }
-    return -1;
-  }
-
   /**
    * 递归添加节点
-   * @param child
+   * @param children
    * @param index 索引
    * @param item 建树的字符串
    * @param key 字符串的key
    */
 
-  addTreeNode(child, index, item, key){
-
+  addTreeNode(children, index, item, key){
+    const char = item[key];
     // 遍历到字符串结尾
-    if(key === item.length){
+    if(char === undefined){
       return;
     }
-    let childKey = SearchIndex.inChildNode(child, item[key]);
-    if(childKey === -1){
-      const treeNode = {
-        value:item[key],
+    if(children[char] === undefined){
+      const childrenTreeNode = {
         index:[index],
-        child:[]
+        children:[]
       }
-      childKey = child.length;
-      child.push(treeNode);
+      children[char] = childrenTreeNode;
     }else{
-      child[childKey].index.push(index);
+      children[char].index.push(index);
     }
     key += 1;
     // 递归调用添加节点
-    this.addTreeNode(child[childKey].child, index, item, key);
+    this.addTreeNode(children[char].children, index, item, key);
   }
 
   add(data) {
@@ -97,34 +83,32 @@ module.exports = class SearchIndex {
     data = this.dealData(data);
     // 生成树
     for(let i = 0; i < data.length; i++){
-      this.addTreeNode(this.header.child, data[i].index, data[i].value, 0);
+      this.addTreeNode(this.header.children, data[i].index, data[i].value, 0);
     }
-
   }
 
   /**
    * 递归查找索引
-   * @param child 树节点的孩子数组
+   * @param children 树节点的孩子数组
    * @param query 查询的字符串
    * @param key 字符串的key
    * @param index 索引
    * @returns Array 索引
    */
-  findIndex(child, query, key, index){
-    const childKey = SearchIndex.inChildNode(child, query[key]);
+  findIndex(children, query, key, index){
+    const treeNode = children[query[key]];
     // 查找失败，跳出递归
-    if(childKey === -1){
+    if(treeNode === undefined){
       return [];
     }
-    // 取index和child[childKey].index的交集
-    // const res = index.filter(v => child[childKey].index.includes(v));
-    const res = SearchIndex.getIntersection(index, child[childKey].index);
+    // 取index和children[childrenKey].index的交集
+    const res = SearchIndex.getIntersection(index, treeNode.index);
     key += 1;
     // 所有的字符都查找完，跳出递归
     if(query[key] === undefined){
       return res;
     }
-    return this.findIndex(child[childKey].child, query, key, res);
+    return this.findIndex(treeNode.children, query, key, res);
   }
 
   /**
@@ -146,12 +130,11 @@ module.exports = class SearchIndex {
     // 处理查询字符串
     query = this.options.queryTokenizer(query);
     // 包含存储所有的索引
-    let index
-    ({index} = this.header);
+    let {index} = this.header;
     // 查找树
     for(let i = 0; i < query.length; i++){
       // 取交集
-      index = SearchIndex.getIntersection(index, this.findIndex(this.header.child, query[i], 0, this.header.index));
+      index = SearchIndex.getIntersection(index, this.findIndex(this.header.children, query[i], 0, this.header.index));
     }
     // 根据索引查找结果
     return this.findDataByIndex(index);
