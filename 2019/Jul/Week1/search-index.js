@@ -17,7 +17,6 @@ module.exports = class SearchIndex {
     add(data) {
         this.addData = data;
         const treeObj = {};
-
         data.forEach((item, index) => {
             const needSearchData = this.options.datumTokenizer(item);
 
@@ -81,8 +80,6 @@ module.exports = class SearchIndex {
         matchedIndexArr.forEach(index => {
             result.push(addedDataArr[index]);
         });
-
-        
         return result;
     }
 };
