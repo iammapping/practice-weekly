@@ -82,6 +82,7 @@ module.exports = class SearchIndex {
             result.push(addedDataArr[index]);
         });
 
+        
         return result;
     }
 };
