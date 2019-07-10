@@ -3,8 +3,8 @@
  */
 class NavigatorHistory {
   constructor() {
-      this.urlArr = []
-      this.currentIndex = -1
+    this.currIndex = -1;
+    this.histories = [];
   }
 
   /**
@@ -14,16 +14,9 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   navigate(url) {
-      const currentIndex = this.currentIndex + 1
-      const count = this.urlArr.length - this.currentIndex // 需删除的数量
-
-      try {
-          this.urlArr.splice(currentIndex, count, url)
-      } catch (error) {
-          throw error
-      }
-
-      this.currentIndex = currentIndex
+    this.histories.splice(this.currIndex + 1);
+    this.histories.push(url);
+    this.currIndex++;
   }
 
   /**
@@ -33,11 +26,12 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   back() {
-      if (this.isBackAvailable()) {
-          return this.urlArr[--this.currentIndex];
-      }
-
-      return undefined;
+    if (this.isBackAvailable()) {
+      this.currIndex--;
+      return this.current();
+    }
+    
+    return undefined;
   }
 
   /**
@@ -47,7 +41,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isBackAvailable() {
-      return this.currentIndex > 0;
+    return this.currIndex > 0;
   }
 
   /**
@@ -57,11 +51,13 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   forward() {
-      if (this.isForwardAvailable()) {
-          return this.urlArr[++this.currentIndex];
-      }
 
-      return undefined;
+    if (this.isForwardAvailable()) {
+      this.currIndex++;
+      return this.current();
+    }
+
+    return undefined;
   }
 
   /**
@@ -71,7 +67,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   isForwardAvailable() {
-      return this.urlArr.length > this.currentIndex + 1
+    return this.currIndex < this.histories.length - 1;
   }
 
   /**
@@ -81,11 +77,7 @@ class NavigatorHistory {
    * @memberof NavigatorHistory
    */
   current() {
-      if (this.urlArr.length > 0) {
-          return this.urlArr[this.currentIndex]
-      }
-
-      return undefined;
+    return this.histories[this.currIndex];
   }
 }
 

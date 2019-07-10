@@ -151,5 +151,18 @@ describe('2019 Jun Week4 Test: navigator-history', () => {
     expect(history.forward()).to.be.eql(4);
     expect(history.isBackAvailable()).to.be.true;
     expect(history.isForwardAvailable()).to.be.false;
+
+    // | 1 2 4
+    //     ^
+    history.back();
+    // | 1 2 4
+    //   ^
+    history.back();
+
+    // | 1 5
+    //     ^
+    history.navigate(5);
+    expect(history.current()).to.be.eql(5);
+    expect(history.isForwardAvailable()).to.be.false;
   });
 });
