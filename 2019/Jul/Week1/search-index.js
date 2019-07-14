@@ -1,3 +1,39 @@
+function Node() {
+  this.children = {};
+  this.ids = [];
+
+  return this;
+}
+
+/**
+ * Array deduplication filter
+ * @param value {string}
+ * @param index {number}
+ * @param array {Array<string>}
+ * @return {boolean}
+ */
+function uniqueFilter(value, index, array) {
+  return array.indexOf(value) === index;
+}
+
+/**
+ * Get the intersection of two arrays
+ * @param array1 {Array<string>}
+ * @param array2 {Array<string>}
+ * @return {Array<string>}
+ */
+function getIntersection(array1, array2) {
+  if (array1.length === array2.length || array1.length < array2.length) {
+    return array2.filter((value, index, self) => (
+      uniqueFilter(value, index, self) && array1.indexOf(value) !== -1
+    ));
+  }
+
+  return array1.filter((value, index, self) => (
+    uniqueFilter(value, index, self) && array2.indexOf(value) !== -1
+  ));
+}
+
 /**
  * 构建一个字符串查找时间复杂度为 O(1) 索引
  */
@@ -12,93 +48,56 @@ module.exports = class SearchIndex {
       queryTokenizer: q => String(q).split(/\s+/),
     }, options);
 
-    this.trees = [];
-    this.treesObj = {};
+    this.trie = new Node();
+    this.indexedData = {};
   }
 
   add(data) {
-    this.addData = data;
-    const treeObj = {};
+    for (let i = 0; i < data.length; i++) {
+      const id = this.options.identify(data[i]);
+      this.indexedData[id] = data[i];
 
-    data.forEach((item, index) => {
-      const needSearchData = this.options.datumTokenizer(item);
+      const tokens = this.options.datumTokenizer(data[i]);
 
-      needSearchData.forEach( needSearchItem => {
-        let currentTreeObj = treeObj;
-        for(let i = 0; i < needSearchItem.length; i += 1) {
-          const currentWord = needSearchItem[i];
-          if(currentTreeObj[currentWord]) {
-            if(currentTreeObj[currentWord].indexes.indexOf(index) < 0) {
-              currentTreeObj[currentWord].indexes.push(index);
-            }
-          } else {
-            currentTreeObj[currentWord] = {indexes: [index], children: {}}
+      for (let j = 0; j < tokens.length; j++) {
+        const token = tokens[j];
+        let node = this.trie;
+
+        for (let n = 0; n < token.length; n++) {
+
+          if (!node.children[token[n]]) {
+            node.children[token[n]] = new Node();
           }
 
-          currentTreeObj = currentTreeObj[currentWord].children;
+          node = node.children[token[n]];
+          node.ids.push(id);
         }
-      })
-    });
-
-    this.treesObj = treeObj;
-    // 获取结构如
-    // {"d": {
-    //   "indexes":[0,3],
-    //   "children":{
-    //     "o":{
-    //       "indexes":[0],
-    //       "children":{
-    //         "g":{
-    //           "indexes":[0],
-    //           "children":{}
-    //         }
-    //       }
-    //     }
-    //   }
-    // }}
+      }
+    }
   }
 
   search(query) {
-    const result = [];
-    const addedDataArr = this.addData;
-    const queryData = this.options.queryTokenizer(query);
-    const matchedIndexes = [];
+    const queryset = this.options.queryTokenizer(query);
+    let matchedArray = [];
 
-    queryData.forEach(queryItem => {
-      const matchedIndexesItem = [];
-      let currentTreeObj = this.treesObj;
+    for (let i = 0; i < queryset.length; i++) {
+      const word = queryset[i];
+      let node = this.trie;
 
-      for(let i = 0; i < queryItem.length; i += 1) {
-        const currentWord = queryItem[i];
-        if(currentTreeObj[currentWord]) {
-          matchedIndexesItem.push(currentTreeObj[currentWord].indexes);
-          currentTreeObj = currentTreeObj[currentWord].children;
-        } else {
-          matchedIndexesItem.push([]);
-          break;
+      for (let j = 0; j < word.length; j++) {
+        if (node) {
+          node = node.children[word[j]];
         }
       }
-      matchedIndexes.push(matchedIndexesItem);
-    });
 
-    let matchedIndexArr = null;
-    matchedIndexes.forEach(matchedIndexesItem => {
-      const lastMatchIndexes = matchedIndexesItem[matchedIndexesItem.length - 1];
-      if(!matchedIndexArr) {
-        matchedIndexArr = lastMatchIndexes;
-      } else {
-        matchedIndexArr.forEach((item, index) => {
-          if(lastMatchIndexes.indexOf(item) < 0) {
-            matchedIndexArr.splice(index, 1);
-          }
-        })
+      if (node) {
+        matchedArray = matchedArray.length ?
+          getIntersection(matchedArray, node.ids) :
+          node.ids.filter(uniqueFilter)
+        ;
       }
-    });
+    }
 
-    matchedIndexArr.forEach(index => {
-      result.push(addedDataArr[index]);
-    });
-
-    return result;
+    return matchedArray.map(id => this.indexedData[id]);
   }
 };
