@@ -183,19 +183,22 @@ module.exports = class LruCache {
   set(key, val) {
     const hash = hashCode(key)
     this.removeNode(hash, key)
+    let node = this.push(hash, key)
+    if (node) {
+      node.setValue(val)
+    } else {
+      node = new Node(hash, key, val, null)
 
-    const node = new Node(hash, key, val, null)
-
-    const len = this.table.length
-    if (len > 0) {
-      this.table[len - 1].next = node
+      const len = this.table.length
+      if (len > 0) {
+        this.table[len - 1].next = node
+      }
+      this.table.push(node)
+  
+      if (this.length > this.capacity) {
+        this.table.shift()
+      }
     }
-    this.table.push(node)
-
-    if (this.length > this.capacity) {
-      this.table.shift()
-    }
-
   }
 
   /**
