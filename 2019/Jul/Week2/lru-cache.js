@@ -15,28 +15,11 @@ function hashCode(str) {
 
 class Node {
   constructor(hash, key, value, next) {
-    this.hashCode = hash;
+    this.hash = hash;
     this.key = key;
     this.value = value;
     this.next = next;
   }
-
-  getKey() {
-    return this.key;
-  }
-
-  getValue() {
-    return this.value;
-  }
-
-  setValue(value) {
-    this.value = value;
-  }
-
-  hash() {
-    return this.hashCode;
-  }
-
 }
 
 /**
@@ -61,13 +44,13 @@ module.exports = class LruCache {
     if ((len = this.table.length) > 0 
         && (first = this.table[0]) != null
         && hash != null) {
-        if (first.hash() === hash && // always check first node
-            ((k = first.getKey()) === key))
+        if (first.hash === hash // always check first node
+            && (k = first.key) === key)
             return first;
         if ((e = first.next) != null) {
             do {
-                if (e.hash() === hash &&
-                    ((k = e.getKey()) === key))
+                if (e.hash === hash
+                    && (k = e.key) === key)
                     return e;
             } while ((e = e.next) != null);
         }
@@ -85,8 +68,8 @@ module.exports = class LruCache {
     if ((len = this.table.length) > 0 
       && (first = this.table[0]) != null
       && hash != null) {
-      if (first.hash() === hash && // always check first node
-          ((k = first.getKey()) === key)) {
+      if (first.hash === hash // always check first node
+        && (k = first.key) === key) {
         this.table.shift(); 
         return;
       }
@@ -95,8 +78,8 @@ module.exports = class LruCache {
         p = first;
         do {
           index++
-          if (e.hash() === hash &&
-              ((k = e.getKey()) === key)) {
+          if (e.hash === hash
+            && (k = e.key) === key) {
             p.next = e.next;
             this.table.splice(index, 1);
             return;
@@ -117,8 +100,8 @@ module.exports = class LruCache {
         && (first = this.table[0]) != null
         && hash != null) {
         
-        if (first.hash() === hash && // always check first node
-            ((k = first.getKey()) === key)) {
+        if (first.hash === hash // always check first node
+          && (k = first.key) === key) {
           if (len > 1) {
             first.next = null
             this.table[len-1].next = first
@@ -132,8 +115,8 @@ module.exports = class LruCache {
           let index = 0;
             do {
               index++;
-              if (e.hash() === hash &&
-                ((k = e.getKey()) === key)) {
+              if (e.hash === hash
+                && (k = e.key) === key) {
                 
                 if (index < len -1) {
                   p.next = e.next;
@@ -168,7 +151,7 @@ module.exports = class LruCache {
   get(key) {
     const node = this.push(hashCode(key), key)
     if (node) {
-      return node.getValue()
+      return node.value
     }
 
     return undefined
@@ -184,7 +167,7 @@ module.exports = class LruCache {
     const hash = hashCode(key)
     let node = this.push(hash, key)
     if (node) {
-      node.setValue(val)
+      node.value = val
     } else {
       node = new Node(hash, key, val, null)
 
