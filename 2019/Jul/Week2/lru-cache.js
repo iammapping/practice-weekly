@@ -1,9 +1,11 @@
+/* eslint-disable class-methods-use-this */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-cond-assign */
 /* eslint-disable no-bitwise */
 
 function hashCode(str) {
   if (str == null) return 0
+  str += ''
   let h = 0;
   let off = 0;
   const len = str.length;
@@ -13,12 +15,41 @@ function hashCode(str) {
   return h;
 }
 
-class Node {
+class Entry {
   constructor(hash, key, value, next) {
     this.hash = hash;
     this.key = key;
     this.value = value;
-    this.next = next;
+    this.before = null;
+    this.after = next;
+  }
+
+  remove() {
+    this.before.after = this.after;
+    this.after.before = this.before;
+  }
+
+  addBefore(existingEntry) {
+    this.after  = existingEntry;
+    this.before = existingEntry.before;
+    if (this.before) {
+      this.before.after = this;
+    }
+    if (this.after) {
+      this.after.before = this;
+    }
+  }
+
+  recordAccess(m) {
+    if (m.accessOrder) {
+      m.modCount++;
+      this.remove();
+      this.addBefore(m.header);
+    }
+  }
+
+  recordRemoval(m) {
+    this.remove();
   }
 }
 
@@ -26,112 +57,95 @@ class Node {
  * 实现一个 LRU Cache
  */
 module.exports = class LruCache {
-// class LruCache {
   /**
    *
    * @param {number} max 最大容量
    */
   constructor(max) {
     this.capacity = max
+    this.header = null
     this.table = []
+    this.size = 0
+    this.accessOrder = true
+    this.modCount = 0
+    this.hashMap = {}
+    this.init()
   }
 
-  getNode(hash, key) {
-    let len; 
-    let first;
-    let e;
-    let k;
-    if ((len = this.table.length) > 0 
-        && (first = this.table[0]) != null
-        && hash != null) {
-        if (first.hash === hash // always check first node
-            && (k = first.key) === key)
-            return first;
-        if ((e = first.next) != null) {
-            do {
-                if (e.hash === hash
-                    && (k = e.key) === key)
-                    return e;
-            } while ((e = e.next) != null);
-        }
+  init() {
+    this.header = new Entry(-1, null, null, null);
+    this.header.before = this.header;
+    this.header.after = this.header;
+  }
+
+  indexFor(h, length) {
+    // assert Integer.bitCount(length) == 1 : "length must be a non-zero power of 2";
+    // return h & (length-1);
+    const i = this.hashMap[h]
+    if (i != null) 
+      return i
+    this.hashMap[h] = this.size
+    return this.size
+  }
+
+  getEntry(key) {
+    if (this.size === 0) {
+        return null;
+    }
+
+    const hash = (key == null) ? 0 : hashCode(key);
+    for (let e = this.table[this.indexFor(hash, this.table.length)];
+         e != null;
+         e = e.next) {
+        let k;
+        if (e.hash === hash &&
+            ((k = e.key) === key))
+            return e;
     }
     return null;
   }
 
-  removeNode(hash, key) {
-    let len; 
-    let first;
-    let p;
-    let e;
-    let k;
-    let index = 0;
-    if ((len = this.table.length) > 0 
-      && (first = this.table[0]) != null
-      && hash != null) {
-      if (first.hash === hash // always check first node
-        && (k = first.key) === key) {
-        this.table.shift(); 
-        return;
-      }
-      
-      if ((e = first.next) != null) {
-        p = first;
-        do {
-          index++
-          if (e.hash === hash
-            && (k = e.key) === key) {
-            p.next = e.next;
-            this.table.splice(index, 1);
-            return;
-          }
-          p = p.next;
-        } while ((e = e.next) != null);
-      }
+  addEntry(hash, key, value, bucketIndex) {
+
+    const old = this.table[bucketIndex];
+    const e = new Entry(hash, key, value, old);
+    this.table[bucketIndex] = e;
+    e.addBefore(this.header);
+    this.size++;
+
+    if (this.size > this.capacity) {
+      this.removeEntryForKey(this.header.after.key)
     }
   }
 
-  push(hash, key) {
-    let len; 
-    let first;
-    let p;
-    let e;
-    let k;
-    if ((len = this.table.length) > 0 
-        && (first = this.table[0]) != null
-        && hash != null) {
-        
-        if (first.hash === hash // always check first node
-          && (k = first.key) === key) {
-          if (len > 1) {
-            first.next = null
-            this.table[len-1].next = first
-            this.table.shift()
-            this.table.push(first)
-          }
-          return first;
-        }
-        if ((e = first.next) != null) {
-          p = first;
-          let index = 0;
-            do {
-              index++;
-              if (e.hash === hash
-                && (k = e.key) === key) {
-                
-                if (index < len -1) {
-                  p.next = e.next;
-                  e.next = null
-                  this.table.splice(index, 1)
-                  this.table.push(e)
-                }
-                return e;
-              }
-
-              p = p.next;
-            } while ((e = e.next) != null);
-        }
+  removeEntryForKey(key) {
+    if (this.size === 0) {
+        return null;
     }
-    return null;
+    const hash = (key == null) ? 0 : hashCode(key);
+    const i = this.indexFor(hash, this.table.length);
+    let prev = this.table[i];
+    let e = prev;
+
+    while (e != null) {
+        const next = e.next;
+        let k;
+        if (e.hash === hash &&
+            ((k = e.key) === key)) {
+            this.modCount++;
+            this.size--;
+            if (prev === e)
+                this.table[i] = next;
+            else
+                prev.next = next;
+            e.recordRemoval(this);
+            return e;
+        }
+        prev = e;
+        e = next;
+    }
+
+    return e;
   }
 
   /**
@@ -140,7 +154,7 @@ module.exports = class LruCache {
    * @readonly
    */
   get length() {
-    return this.table.length
+    return this.size
   }
 
   /**
@@ -149,12 +163,11 @@ module.exports = class LruCache {
    * @param {*} key
    */
   get(key) {
-    const node = this.push(hashCode(key), key)
-    if (node) {
-      return node.value
-    }
-
-    return undefined
+    const e = this.getEntry(key);
+    if (e == null)
+        return undefined;
+    e.recordAccess(this);
+    return e.value;
   }
 
   /**
@@ -164,23 +177,21 @@ module.exports = class LruCache {
    * @param {any} val
    */
   set(key, val) {
-    const hash = hashCode(key)
-    let node = this.push(hash, key)
-    if (node) {
-      node.value = val
-    } else {
-      node = new Node(hash, key, val, null)
-
-      const len = this.table.length
-      if (len > 0) {
-        this.table[len - 1].next = node
-      }
-      this.table.push(node)
-  
-      if (this.length > this.capacity) {
-        this.table.shift()
-      }
+    const hash = hashCode(key);
+    const i = this.indexFor(hash, this.table.length);
+    for (let e = this.table[i]; e != null; e = e.next) {
+        let k;
+        if (e.hash === hash && ((k = e.key) === key)) {
+            const oldValue = e.value;
+            e.value = val;
+            e.recordAccess(this);
+            return oldValue;
+        }
     }
+
+    this.modCount++;
+    this.addEntry(hash, key, val, i);
+    return null;
   }
 
   /**
@@ -189,7 +200,8 @@ module.exports = class LruCache {
    * @param {any} key
    */
   del(key) {
-    this.removeNode(hashCode(key), key)
+    const e = this.removeEntryForKey(key);
+    return (e == null ? null : e.value);
   }
 
   /**
@@ -198,13 +210,16 @@ module.exports = class LruCache {
    * @param {any} key
    */
   has(key) {
-    return this.getNode(hashCode(key), key) !== null
+    return this.getEntry(key) != null;
   }
 
   /**
    * 清空所有的内容
    */
   reset() {
+    this.modCount++
     this.table = []
+    this.size = 0
+    this.init()
   }
 }
