@@ -122,6 +122,10 @@ module.exports = class LruCache {
    * @param {any} val
    */
   set(key, val) {
+    if (typeof key === "undefined") {
+      return;
+    }
+
     if (this.has(key)) {
       this.cache[key].value = val;
       this.list.moveToFirst(this.cache[key]);
