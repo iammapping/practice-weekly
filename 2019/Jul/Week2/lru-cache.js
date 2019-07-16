@@ -21,7 +21,8 @@ class Entry {
     this.key = key;
     this.value = value;
     this.before = null;
-    this.after = next;
+    this.after = null;
+    this.next = next;
   }
 
   remove() {
@@ -32,12 +33,8 @@ class Entry {
   addBefore(existingEntry) {
     this.after  = existingEntry;
     this.before = existingEntry.before;
-    if (this.before) {
-      this.before.after = this;
-    }
-    if (this.after) {
-      this.after.before = this;
-    }
+    this.before.after = this;
+    this.after.before = this;
   }
 
   recordAccess(m) {
@@ -68,7 +65,6 @@ module.exports = class LruCache {
     this.size = 0
     this.accessOrder = true
     this.modCount = 0
-    this.hashMap = {}
     this.init()
   }
 
@@ -80,12 +76,7 @@ module.exports = class LruCache {
 
   indexFor(h, length) {
     // assert Integer.bitCount(length) == 1 : "length must be a non-zero power of 2";
-    // return h & (length-1);
-    const i = this.hashMap[h]
-    if (i != null) 
-      return i
-    this.hashMap[h] = this.size
-    return this.size
+    return h % this.capacity;
   }
 
   getEntry(key) {
