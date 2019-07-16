@@ -1,5 +1,37 @@
-function intersection(a, b) {// 交集
-  return [...new Set([...new Set(a)].filter(x => new Set(b).has(x)))];
+function Node() {
+  this.children = {};
+  this.ids = [];
+
+  return this;
+}
+
+/**
+ * Array deduplication filter
+ * @param value {string}
+ * @param index {number}
+ * @param array {Array<string>}
+ * @return {boolean}
+ */
+function uniqueFilter(value, index, array) {
+  return array.indexOf(value) === index;
+}
+
+/**
+ * Get the intersection of two arrays
+ * @param array1 {Array<string>}
+ * @param array2 {Array<string>}
+ * @return {Array<string>}
+ */
+function getIntersection(array1, array2) {
+  if (array1.length === array2.length || array1.length < array2.length) {
+    return array2.filter((value, index, self) => (
+      uniqueFilter(value, index, self) && array1.indexOf(value) !== -1
+    ));
+  }
+
+  return array1.filter((value, index, self) => (
+    uniqueFilter(value, index, self) && array2.indexOf(value) !== -1
+  ));
 }
 
 /**
@@ -16,52 +48,56 @@ module.exports = class SearchIndex {
       queryTokenizer: q => String(q).split(/\s+/),
     }, options);
 
-    this.dicts = {};// 词典
-    this.identifyMaps = {};// 源数据索引
+    this.trie = new Node();
+    this.indexedData = {};
   }
 
   add(data) {
-    (data || []).forEach(word => {
-      const identify = this.options.identify(word);
-      this.identifyMaps[identify] = word;
+    for (let i = 0; i < data.length; i++) {
+      const id = this.options.identify(data[i]);
+      this.indexedData[id] = data[i];
 
-      (this.options.datumTokenizer(word) || []).forEach(key => {
-        if (this.dicts[key]) {
-          this.dicts[key].push(identify);
-        } else {
-          this.dicts[key] = [identify];
+      const tokens = this.options.datumTokenizer(data[i]);
+
+      for (let j = 0; j < tokens.length; j++) {
+        const token = tokens[j];
+        let node = this.trie;
+
+        for (let n = 0; n < token.length; n++) {
+
+          if (!node.children[token[n]]) {
+            node.children[token[n]] = new Node();
+          }
+
+          node = node.children[token[n]];
+          node.ids.push(id);
         }
-      });
-    });
+      }
+    }
   }
 
   search(query) {
-    const queies = this.options.queryTokenizer(query);
-    if (queies.indexOf(query) === -1) queies.push(query);
+    const queryset = this.options.queryTokenizer(query);
+    let matchedArray = [];
 
-    const result = [];
-    let identifies = [];
+    for (let i = 0; i < queryset.length; i++) {
+      const word = queryset[i];
+      let node = this.trie;
 
-    queies.forEach(que => {
-      const identifiesTmp = [];
-
-      Object.keys(this.dicts).forEach(key => {
-        if (key === que || key.search(query) === 0) {// 匹配规则: 全等 或 前部分相等
-          (this.dicts[key] || []).forEach(identify => {
-            if (identifiesTmp.indexOf(identify) === -1) identifiesTmp.push(identify);
-          });
+      for (let j = 0; j < word.length; j++) {
+        if (node) {
+          node = node.children[word[j]];
         }
-      });
-
-      if (!identifies.length) {// identifies做交集
-        identifies = identifiesTmp;
-      } else if (identifiesTmp.length) {
-        identifies = intersection(identifies, identifiesTmp);
       }
-    });
 
-    identifies.sort((a, b) => a - b).forEach(identify => result.push(this.identifyMaps[identify]));// 数字排序，字符不变
+      if (node) {
+        matchedArray = matchedArray.length ?
+          getIntersection(matchedArray, node.ids) :
+          node.ids.filter(uniqueFilter)
+        ;
+      }
+    }
 
-    return result;
+    return matchedArray.map(id => this.indexedData[id]);
   }
 };
