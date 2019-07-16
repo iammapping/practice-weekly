@@ -136,8 +136,7 @@ module.exports = class LruCache {
       }
 
       newLastNode = nextNode;
-      const nn = nextNode.nextNode;
-      nextNode = nn;
+      ({nextNode} = nextNode);
     }
   }
 
