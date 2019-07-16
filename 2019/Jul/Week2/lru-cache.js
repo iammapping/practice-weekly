@@ -122,7 +122,7 @@ module.exports = class LruCache {
    * @param {any} val
    */
   set(key, val) {
-    if (typeof key === "undefined") {
+    if (typeof key === "undefined" || typeof val === "undefined") {
       return;
     }
 
