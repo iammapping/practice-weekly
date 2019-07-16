@@ -182,7 +182,6 @@ module.exports = class LruCache {
    */
   set(key, val) {
     const hash = hashCode(key)
-    this.removeNode(hash, key)
     let node = this.push(hash, key)
     if (node) {
       node.setValue(val)
