@@ -81,15 +81,15 @@ class DoubleLinkedList {
 /**
  * 实现一个 LRU Cache
  */
-module.exports = class LruCache extends DoubleLinkedList {
+module.exports = class LruCache {
   /**
    *
    * @param {number} max 最大容量
    */
   constructor(max) {
-    super();
     this.capacity = max;
     this.cache = {};
+    this.list = new DoubleLinkedList();
   }
 
   /**
@@ -98,7 +98,7 @@ module.exports = class LruCache extends DoubleLinkedList {
    * @readonly
    */
   get length() {
-    return this.size;
+    return this.list.size;
   }
 
   /**
@@ -107,13 +107,12 @@ module.exports = class LruCache extends DoubleLinkedList {
    * @param {*} key
    */
   get(key) {
-    const node = this.cache[key];
-    if (!node) {
-      return node;
+    if (!this.has(key)) {
+      return undefined;
     }
 
-    this.moveToFirst(node);
-    return node.value;
+    this.list.moveToFirst(this.cache[key]);
+    return this.cache[key].value;
   }
 
   /**
@@ -125,15 +124,15 @@ module.exports = class LruCache extends DoubleLinkedList {
   set(key, val) {
     if (this.has(key)) {
       this.cache[key].value = val;
-      this.moveToFirst(this.cache[key]);
+      this.list.moveToFirst(this.cache[key]);
       return;
     }
 
     this.cache[key] = new Node(key, val);
-    this.insert(this.cache[key]);
+    this.list.insert(this.cache[key]);
 
     if (this.length > this.capacity) {
-      delete this.cache[this.pop().key];
+      delete this.cache[this.list.pop().key];
     }
   }
 
@@ -143,7 +142,7 @@ module.exports = class LruCache extends DoubleLinkedList {
    * @param {any} key
    */
   del(key) {
-    this.remove(this.cache[key]);
+    this.list.remove(this.cache[key]);
 
     delete this.cache[key];
   }
@@ -162,6 +161,6 @@ module.exports = class LruCache extends DoubleLinkedList {
    */
   reset() {
     this.cache = {};
-    this.init();
+    this.list = new DoubleLinkedList();
   }
 };
