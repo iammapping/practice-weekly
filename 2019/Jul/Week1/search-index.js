@@ -1,85 +1,103 @@
+function Node() {
+  this.children = {};
+  this.ids = [];
+
+  return this;
+}
+
+/**
+ * Array deduplication filter
+ * @param value {string}
+ * @param index {number}
+ * @param array {Array<string>}
+ * @return {boolean}
+ */
+function uniqueFilter(value, index, array) {
+  return array.indexOf(value) === index;
+}
+
+/**
+ * Get the intersection of two arrays
+ * @param array1 {Array<string>}
+ * @param array2 {Array<string>}
+ * @return {Array<string>}
+ */
+function getIntersection(array1, array2) {
+  if (array1.length === array2.length || array1.length < array2.length) {
+    return array2.filter((value, index, self) => (
+      uniqueFilter(value, index, self) && array1.indexOf(value) !== -1
+    ));
+  }
+
+  return array1.filter((value, index, self) => (
+    uniqueFilter(value, index, self) && array2.indexOf(value) !== -1
+  ));
+}
+
 /**
  * 构建一个字符串查找时间复杂度为 O(1) 索引
  */
 module.exports = class SearchIndex {
   constructor(options) {
-      this.options = Object.assign({
-        // 提取对象的索引
-        identify: o => String(o),
-        // 将数据分词
-        datumTokenizer: o => String(o).split(/\s+/),
-        // 将查询字符串分词
-        queryTokenizer: q => String(q).split(/\s+/),
-      }, options);
-      this.treesObj = {};
+    this.options = Object.assign({
+      // 提取对象的索引
+      identify: o => String(o),
+      // 将数据分词
+      datumTokenizer: o => String(o).split(/\s+/),
+      // 将查询字符串分词
+      queryTokenizer: q => String(q).split(/\s+/),
+    }, options);
+
+    this.trie = new Node();
+    this.indexedData = {};
   }
 
-    add(data) {
-        this.addData = data;
-        const treeObj = {};
-        data.forEach((item, index) => {
-            const needSearchData = this.options.datumTokenizer(item);
+  add(data) {
+    for (let i = 0; i < data.length; i++) {
+      const id = this.options.identify(data[i]);
+      this.indexedData[id] = data[i];
 
-            needSearchData.forEach( needSearchItem => {
-                let currentTreeObj = treeObj;
-                for(let i = 0; i < needSearchItem.length; i += 1) {
-                    const currentWord = needSearchItem[i];
-                    if(currentTreeObj[currentWord]) {
-                        if(currentTreeObj[currentWord].indexes.indexOf(index) < 0) {
-                            currentTreeObj[currentWord].indexes.push(index);
-                        }
-                    } else {
-                        currentTreeObj[currentWord] = {indexes: [index], children: {}}
-                    }
+      const tokens = this.options.datumTokenizer(data[i]);
 
-                    currentTreeObj = currentTreeObj[currentWord].children;
-                }
-            })
-        });
+      for (let j = 0; j < tokens.length; j++) {
+        const token = tokens[j];
+        let node = this.trie;
 
-        this.treesObj = treeObj;
+        for (let n = 0; n < token.length; n++) {
+
+          if (!node.children[token[n]]) {
+            node.children[token[n]] = new Node();
+          }
+
+          node = node.children[token[n]];
+          node.ids.push(id);
+        }
+      }
+    }
+  }
+
+  search(query) {
+    const queryset = this.options.queryTokenizer(query);
+    let matchedArray = [];
+
+    for (let i = 0; i < queryset.length; i++) {
+      const word = queryset[i];
+      let node = this.trie;
+
+      for (let j = 0; j < word.length; j++) {
+        if (node) {
+          node = node.children[word[j]];
+        }
+      }
+
+      if (node) {
+        matchedArray = matchedArray.length ?
+          getIntersection(matchedArray, node.ids) :
+          node.ids.filter(uniqueFilter)
+        ;
+      }
     }
 
-    search(query) {
-        const result = [];
-        const addedDataArr = this.addData;
-        const queryData = this.options.queryTokenizer(query);
-        const matchedIndexes = [];
-
-        queryData.forEach(queryItem => {
-            const matchedIndexesItem = [];
-            let currentTreeObj = this.treesObj;
-
-            for(let i = 0; i < queryItem.length; i += 1) {
-                const currentWord = queryItem[i];
-                if(currentTreeObj[currentWord]) {
-                    matchedIndexesItem.push(currentTreeObj[currentWord].indexes);
-                    currentTreeObj = currentTreeObj[currentWord].children;
-                } else {
-                    matchedIndexesItem.push([]);
-                    break;
-                }
-            }
-            matchedIndexes.push(matchedIndexesItem);
-        });
-
-        let matchedIndexArr = null;
-        matchedIndexes.forEach(matchedIndexesItem => {
-            const lastMatchIndexes = matchedIndexesItem[matchedIndexesItem.length - 1];
-            if(!matchedIndexArr) {
-                matchedIndexArr = lastMatchIndexes;
-            } else {
-                matchedIndexArr.forEach((item, index) => {
-                    if(lastMatchIndexes.indexOf(item) < 0) {
-                    matchedIndexArr.splice(index, 1);
-                }
-            });
-            }
-        });
-
-        matchedIndexArr.forEach(index => {
-            result.push(addedDataArr[index]);
-        });
-        return result;
-    }
+    return matchedArray.map(id => this.indexedData[id]);
+  }
 };
