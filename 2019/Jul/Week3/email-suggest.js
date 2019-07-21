@@ -81,14 +81,19 @@ module.exports = class EmailSuggestion {
     const username = email.slice(0, email.indexOf('@'));
     const address = email.slice(email.indexOf('@') + 1);
     const result = [];
+    const map = {};
 
     // eslint-disable-next-line array-callback-return
     this.suggestedSuffixes.forEach(suggested => {
-      if (distance(address, suggested) <= this.maxDistance) {
-        result.push(`${username}@${suggested}`);
+      const cost = distance(address, suggested);
+      if (cost <= this.maxDistance) {
+        const suggestEmail = `${username}@${suggested}`;
+
+        result.push(suggestEmail);
+        map[suggestEmail] = cost;
       }
     });
 
-    return result;
+    return result.sort((a, b) => map[a] - map[b]);
   }
 };
