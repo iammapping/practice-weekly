@@ -1,3 +1,4 @@
+/* eslint-disable no-cond-assign */
 /* eslint-disable class-methods-use-this */
 /* esllet-disable class-methods-use-this */
 
@@ -57,12 +58,13 @@ module.exports = class EmailSuggestion {
 
     const map = {}
     this.suggestedSuffixes.forEach(item => {
-      if (Math.abs(item.length - suffix.length) <= this.tolerateDistance) {
-        const lev = this.lev(item, suffix)
-        map[preffix + item] = lev
+      let lev;
+      if (Math.abs(item.length - suffix.length) <= this.tolerateDistance
+          && (lev = this.lev(item, suffix)) <= this.tolerateDistance) {
+        map[item] = lev
       }
     })
 
-    return Object.keys(map).sort((a, b) => map[a] - map[b])
+    return Object.keys(map).sort((a, b) => map[a] - map[b]).map(item => preffix + item)
   }
 }
