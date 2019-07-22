@@ -1,20 +1,18 @@
 /**
  * 邮箱正确后缀建议
  */
-const resultObj = {};
 
-function getDistance(emailSuffix, suffix) {
-  const xAxisArr = emailSuffix.split('');
-  const yAxisArr = suffix.split('');
-  const xAxisLength = xAxisArr.length;
-  const yAxisLength = yAxisArr.length;
+function getDistance(xAxisStr, yAxisStr) {
+  const xAxisLength = xAxisStr.length;
+  const yAxisLength = yAxisStr.length;
   const distanceArr = [];
 
   for(let i = 1; i <= xAxisLength; i += 1) {
     const yAxisDistance = [];
-    const currentXalisValue = xAxisArr[i - 1];
+    const currentXalisValue = xAxisStr[i - 1];
+
     for(let j = 1; j <= yAxisLength; j += 1) {
-      const currentYalisValue = yAxisArr[j - 1];
+      const currentYalisValue = yAxisStr[j - 1];
       const topValue = typeof yAxisDistance[j - 2] !== 'undefined' ? yAxisDistance[j - 2] : i;
       const leftValue = distanceArr[i - 2] ? distanceArr[i - 2][j - 1] : j;
       let topLeftValue = j - 1;
@@ -44,6 +42,7 @@ function getDistance(emailSuffix, suffix) {
 module.exports = class EmailSuggestion {
   constructor(suggestedSuffixes = []) {
     this.suggestedSuffixes = suggestedSuffixes;
+    this.resultObj = {};
   }
 
   /**
@@ -53,23 +52,24 @@ module.exports = class EmailSuggestion {
    * @returns {array} 所有建议的邮箱
    */
   suggest(email) {
-    const emailSuffix = email.substr(email.indexOf('@') + 1);
-    const emailPrefix = email.substr(0, email.indexOf('@') + 1);
+    const emailArr = email.split('@');
+    const emailSuffix = emailArr[1];
+    const emailPrefix = emailArr[0];
 
     this.suggestedSuffixes.forEach(item => {
       const distance = getDistance(emailSuffix, item);
       if(distance !== false) {
-        if(Array.isArray(resultObj[distance])) {
-          resultObj[distance].push(emailPrefix + item);
+        if(Array.isArray(this.resultObj[distance])) {
+          this.resultObj[distance].push(`${emailPrefix}@${item}`);
         } else {
-          resultObj[distance] = [emailPrefix + item];
+          this.resultObj[distance] = [`${emailPrefix}@${item}`];
         }
       }
     });
 
     let result = [];
-    Object.keys(resultObj).forEach(key => {
-      result = result.concat(resultObj[key]);
+    Object.keys(this.resultObj).forEach(key => {
+      result = result.concat(this.resultObj[key]);
     });
 
     return result;
