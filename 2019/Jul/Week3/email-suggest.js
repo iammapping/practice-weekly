@@ -49,15 +49,15 @@ module.exports = class EmailSuggestion {
    * @returns {array} 所有建议的邮箱
    */
   suggest(email) {
-    const emailArr = email.split('@');
+    const [name, suffix] = email.split('@');
     const distance = this.suggestedSuffixes.map(value => ({
       'key': value,
-      'weight': Levenshtein.getDistance(value, emailArr[1])
+      'weight': Levenshtein.getDistance(value, suffix)
     }));
 
     return distance
         .sort((a, b) => a.weight- b.weight)
         .filter(value => value.weight <= this.maxDistance)
-        .map(value => `${emailArr[0]}@${value.key}`);
+        .map(value => `${name}@${value.key}`);
   }
 }
