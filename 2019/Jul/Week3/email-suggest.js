@@ -2,7 +2,7 @@ function getStrDistance(s1, s2){
   const len1 = s1.length;
   const len2 = s2.length;
 
-  let matrix = [];
+  const matrix = [];
   for (let i = 0; i <= len1; i++) {
     matrix[i] = [];
     for (let j = 0; j <= len2; j++) {
@@ -44,16 +44,15 @@ module.exports = class EmailSuggestion {
     const emailUser = getEmailUser(email);
     let suggestList = [];
     this.suggestedSuffixes.map(emailServer => {
-      const suggestEmail = emailUser + '@' + emailServer;
+      const suggestEmail = `${emailUser}@${emailServer}`;
       suggestList.push({
         email: suggestEmail,
         score: getStrDistance(email, suggestEmail),
       });
+      return true;
     });
 
-    suggestList = suggestList.sort((e1, e2) => {
-      return e1.score - e2.score;
-    });
+    suggestList = suggestList.sort((e1, e2) => e1.score - e2.score );
 
     return suggestList;
   }
@@ -65,6 +64,6 @@ module.exports = class EmailSuggestion {
    * @returns {array} 所有建议的邮箱
    */
   suggest(email) {
-    return this.getSuggestList(email).map(e => {return e.email});
+    return this.getSuggestList(email).map(e => e.email);
   }
 }
