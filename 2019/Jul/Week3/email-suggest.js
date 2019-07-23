@@ -15,8 +15,7 @@ function getStrDistance(s1, s2){
         if (s1[i - 1] !== s2[j - 1]) {
           cost = 1;
         }
-        const temp = matrix[i - 1][j - 1] + cost;
-        matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, temp)
+        matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j - 1] + cost)
       }
     }
   }
@@ -32,23 +31,36 @@ function getEmailUser(email) {
   return user;
 }
 
+function getEmailServer(email) {
+  const idx = (email || '').lastIndexOf('@');
+  let server = email;
+  if(idx > -1) {
+    server = email.substr(idx + 1);
+  }
+  return server;
+}
+
 /**
  * 邮箱正确后缀建议
  */
 module.exports = class EmailSuggestion {
   constructor(suggestedSuffixes = []) {
     this.suggestedSuffixes = suggestedSuffixes;
+    this.thresholdValue = 4;
   }
 
   getSuggestList(email) {
     const emailUser = getEmailUser(email);
+    const inputServer = getEmailServer(email);
     let suggestList = [];
     this.suggestedSuffixes.map(emailServer => {
-      const suggestEmail = `${emailUser}@${emailServer}`;
-      suggestList.push({
-        email: suggestEmail,
-        score: getStrDistance(email, suggestEmail),
-      });
+      const score = getStrDistance(inputServer, emailServer);
+      if(score <= this.thresholdValue) {
+        suggestList.push({
+          email: `${emailUser}@${emailServer}`,
+          score,
+        });
+      }
       return true;
     });
 
