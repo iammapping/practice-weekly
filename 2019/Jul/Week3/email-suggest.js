@@ -6,7 +6,6 @@ module.exports = class EmailSuggestion {
     this.suggestedSuffixes = suggestedSuffixes;
   }
 
-
   static levenshtein (a, b) {
 
     const matrix = [];
@@ -45,17 +44,27 @@ module.exports = class EmailSuggestion {
    * @returns {array} 所有建议的邮箱
    */
   suggest(email) {
-    // const preffix = email.split('@')[0];
+    const preffix = email.split('@')[0];
     const emailType = email.split('@')[1];
-    const emailArray = [];
+    // const suggestedEmails = [];
+    const maxStep = 3;
 
+    const emailsMap = new Map();
     this.suggestedSuffixes.forEach(suggestItem => {
       const index = EmailSuggestion.levenshtein(suggestItem, emailType);
-      if (index < 3) {
-        emailArray.push(`${email.slice(0,email.indexOf('@'))}@${suggestItem}`);
+      if (index < maxStep) {
+        emailsMap.set(index,`${preffix}@${suggestItem}`);
       }
     });
-    return emailArray;
+
+
+    // const arrayObj=Array.from(map);
+    // const arrayObj = [...map]
+    // arrayObj.sort(function(a,b){return a[0]-b[0]});
+
+    const suggestedEmails = new Map([...emailsMap.entries()].sort());
+
+    return [ ...suggestedEmails.values() ];
 
   }
 };
