@@ -1,3 +1,4 @@
+const Heap = require('./heap');
 /**
  * 实现一个优先级队列
  */
@@ -9,6 +10,7 @@ module.exports = class PriorityQueue {
       // 队列元素的优先级比对方法
       comparator: (a, b) => b - a,
     }, options);
+    this.heap = new Heap(this.options.initValues, this.options.comparator);
   }
 
   /**
@@ -16,7 +18,7 @@ module.exports = class PriorityQueue {
    * @readonly
    */
   get length() {
-
+    return this.heap.length;
   }
 
   /**
@@ -24,7 +26,7 @@ module.exports = class PriorityQueue {
    * @param {any} value
    */
   queue(value) {
-
+    this.heap.insert(value);
   }
 
   /**
@@ -32,20 +34,20 @@ module.exports = class PriorityQueue {
    * @return {any}
    */
   dequeue() {
-;
+    return this.heap.removeRoot();
   }
 
   /**
    * 获取队列最优先的值
    */
   peek() {
-
+    return this.heap.max;
   }
 
   /**
    * 清空队列
    */
   clear() {
-
+    this.heap = new Heap([], this.options.comparator);
   }
 };

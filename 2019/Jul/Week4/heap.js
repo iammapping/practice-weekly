@@ -1,126 +1,80 @@
-function MaxHeap(data) {
+module.exports = class Heap{
 
-    this.heap = data || [];
+    constructor(data, comparator){
+        this.heap = ['']; // 第一个元素留空 元素i的左孩子为2i，右孩子为2i+1
+        this.heap = this.heap.concat(data);
 
-    function init() {
-        let length = this.heap.length;
-        let currPos = Math.floor((length - 2) / 2);
-        while (currPos >= 0){
-            shif_down(currPos, length - 1);
-            currPos--;
+        this.comparator = comparator || ((a, b) => a - b);
+        this.init();
+    }
+
+    get length(){
+        return this.heap.length - 1;
+    }
+
+    init(){
+        let { length } = this;
+        let current = Math.ceil((length - 1) / 2);
+        while(current > 0){
+            this.shiftDown(current, length--);
+            current--;
         }
     }
 
-    function shif_down(start, length) {
-        let parentIndex = start;
-        let maxChildIndex = parentIndex * 2 + 1;;
-        while (maxChildIndex <= length){
-            if(maxChildIndex < length && this.heap[maxChildIndex] < this.heap[maxChildIndex + 1]){
-                maxChildIndex += 1;
-            }
-            if(this.heap[parentIndex] >= this.heap[maxChildIndex]){
-                break;
-            }else {
-                swap(parentIndex, maxChildIndex);
-                parentIndex = maxChildIndex;
-                maxChildIndex = maxChildIndex * 2 + 1
-            }
-        }
-    }
-
-    function swap(parentIndex, maxChildIndex){
-        const temp = this.heap[parentIndex];
-        this.heap[parentIndex] = this.heap[maxChildIndex];
-        this.heap[maxChildIndex] = temp;
-    }
-
-    this.insert = function (element) {
+    insert(element){
         this.heap.push(element);
-        shif_up(this.heap.length);
-    };
-
-    function shif_up(start) {
-        let childIndex=start;   //当前叶节点
-        let parentIndex=Math.floor((childIndex-1)/2); //父节点
-
-        while (childIndex>0){
-            //如果大就不交换
-            if(heap[parentIndex]>=heap[childIndex]){
-                break;
-            }else {
-                let temp=heap[parentIndex];
-                heap[parentIndex]=heap[childIndex];
-                heap[childIndex]=temp;
-                childIndex=parentIndex;
-                parentIndex=Math.floor((parentIndex-1)/2);
-            }
-        }
+        this.shiftUp(this.length);
     }
 
-    /**
-     * 移除根元素，并返回根元素数据
-     *
-     * @returns {*} data 根元素的数据值
-     */
-    this.removeRoot = function () {
-        if(currSize<=0){
+    get max(){
+        return this.length > 0 ? this.heap[1] : NaN;
+    }
+
+    removeRoot(){
+        if(this.length === 0){
             return null;
         }
-        let maxValue=heap[0];
-        heap[0]=heap[currSize];
-        currSize--;
-        shif_down(0, currSize-1);
+        const maxValue = this.heap[1];
+        this.heap[1] = this.heap.pop();
+        this.shiftDown(1, this.length);
         return maxValue;
-    };
-
-    init();
-
-}
-
-/**
- * 二叉树节点构造函数
- * @class
- * @param {*} data
- */
-function BinaryTreeNode(data) {
-
-    this.data = data;
-
-    this.parent = null;
-
-    this.leftChild = null;
-    this.rightChild = null;
-
-}
-
-const maxHeap = new MaxHeap();
-
-const initDataArray = [];
-for (let index = 0; index < 5; index++) {
-
-    const value = 5 + 95 * Math.random();
-
-    if (-1 === initDataArray.indexOf(value)) {
-        // 没有重复值
-        initDataArray.push(value);
-        if (!maxHeap.insert(value)) {
-            // 插入失败，重新生成一个
-            index--;
-        }
-    } else {
-        // 重复了，重新生成一个
-        index--;
     }
 
-}
-console.log('init array = ', initDataArray);
+    shiftDown(start, length){
+        let parent = start;
+        let maxChild = parent * 2;
+        while (maxChild <= length){
+            if(maxChild < length && this.comparator(this.heap[maxChild], this.heap[maxChild + 1]) < 0){
+                maxChild += 1;
+            }
+            if(this.comparator(this.heap[parent], this.heap[maxChild]) >= 0){
+                break;
+            }else {
+                this.swap(parent, maxChild);
+                parent = maxChild;
+                maxChild *= 2;
+            }
+        }
+    }
 
+    shiftUp(start){
+        let child = start;
+        let parent = Math.ceil((child - 1) /2);
+        while (parent > 0){
+            if(this.comparator(this.heap[parent], this.heap[child]) >= 0){
+                break;
+            }else {
+                this.swap(parent, child);
+                child = parent;
+                parent = Math.floor((parent - 1) / 2);
+            }
+        }
+    }
 
-const max1 = maxHeap.removeRoot();
-console.log('max1', max1);
+    swap(key1, key2){
+        const temp = this.heap[key1];
+        this.heap[key1] = this.heap[key2];
+        this.heap[key2] = temp;
+    }
 
-const max2 = maxHeap.removeRoot();
-console.log('max2', max2);
-
-const max3 = maxHeap.removeRoot();
-console.log('max3', max3);
+};

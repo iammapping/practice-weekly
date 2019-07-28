@@ -1,7 +1,17 @@
 const { expect } = require('chai');
 const PriorityQueue = require('./priority-queue');
+const Heap = require('./heap');
 
 describe('2019 Jul Week4 Test: priority-queue', () => {
+
+  it('test heap', () => {
+    const heap = new Heap([4, 1, 3, 2, 16, 9, 10, 14, 8, 7]);
+    expect(heap.removeRoot()).to.be.equal(16);
+    expect(heap.removeRoot()).to.be.equal(14);
+    heap.insert(20);
+    expect(heap.removeRoot()).to.be.equal(20);
+  });
+
   it('with init values, small is higher priority', () => {
     const queue = new PriorityQueue({
       initValues: [3, 2, 1]
