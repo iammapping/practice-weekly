@@ -1,49 +1,45 @@
+class Levenshtein {
+
+  static init(rows, cols){
+    const distance = new Array(rows);
+    for(let i = 0; i < rows; i++){
+      distance[i] = new Array(cols);
+    }
+
+    let l = Math.max(rows, cols);
+    while(l--){
+      rows - 1 >= l && (distance[l][0] = l);
+      cols - 1 >= l && (distance[0][l] = l);
+    }
+    return distance;
+  }
+
+  static getDistance(str1, str2){
+    let i = 0;
+    let j = 0;
+    let temp = 0;
+    const distance = this.init(str1.length+1, str2.length+1);
+    while(i++ < str1.length){
+      j = 0;
+      while(j++ < str2.length){
+        temp = str1.charAt(i-1) === str2.charAt(j-1) ? 0 : 1;
+        distance[i][j] = Math.min(
+          distance[i-1][j] + 1,
+          distance[i][j-1] + 1,
+          distance[i-1][j-1] + temp);
+      }
+    }
+    return distance[i-1][j-1];
+  }
+}
+
 /**
  * 邮箱正确后缀建议
  */
-function getMin(m1, m2, m3) {
-  const min = Math.min(m1, m2);
-  return Math.min(min, m3);
-}
-
-function levenshtein(str1, str2) {
-  const len1 = str1.length + 1;
-  const len2 = str2.length + 1;
-
-  if (len1 === 0 || len2 === 0) return 0;
-
-  const matrix = [];
-
-  for (let i = 0; i < len1; i++) {
-    matrix[i] = [];
-    matrix[i][0] = i;
-  }
-
-  for (let j = 0; j < len2; j++) {
-    matrix[0][j] = j;
-  }
-
-  for (let i = 1; i < len1; i++) {
-    const c1 = str1[i - 1];
-
-    for (let j = 1; j < len2; j++) {
-      const c2 = str2[j - 1];
-      const sub = c1 === c2 ? 0 : 1;
-
-      const tv = matrix[i - 1][j] + 1;
-      const lv = matrix[i][j - 1] + 1;
-      const mv = matrix[i - 1][j - 1] + sub;
-
-      matrix[i][j] = getMin(tv, lv, mv);
-    }
-  }
-
-  return 1 - matrix[len1 - 1][len2 - 1] / Math.max(len1, len2);
-}
-
 module.exports = class EmailSuggestion {
   constructor(suggestedSuffixes = []) {
     this.suggestedSuffixes = suggestedSuffixes;
+    this.maxDistance = 5;
   }
 
   /**
@@ -53,20 +49,15 @@ module.exports = class EmailSuggestion {
    * @returns {array} 所有建议的邮箱
    */
   suggest(email) {
-    const result = [];
-    const minLv = 0.5;
-    const em = email.split('@');
-    const name = em[0];
-    const suffix = em[1];
+    const [name, suffix] = email.split('@');
+    const distance = this.suggestedSuffixes.map(value => ({
+      'key': value,
+      'weight': Levenshtein.getDistance(value, suffix)
+    }));
 
-    this.suggestedSuffixes.forEach(suggested => {
-      const ls = levenshtein(suffix, suggested);
-
-      if (ls > minLv) {
-        result.push([name, "@", suggested].join(''));
-      }
-    });
-
-    return result;
+    return distance
+      .sort((a, b) => a.weight- b.weight)
+      .filter(value => value.weight <= this.maxDistance)
+      .map(value => `${name}@${value.key}`);
   }
 }
