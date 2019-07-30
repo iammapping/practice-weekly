@@ -1,57 +1,64 @@
-function getEmailSimilarity(s1, s2){
-    const len1 = s1.length;
-    const len2 = s2.length;
+class Levenshtein {
 
-    const matrix = [];
-    for (let i = 0; i <= len1; i++) {
-        matrix[i] = [];
-        for (let j = 0; j <= len2; j++) {
-            if (i === 0) {
-                matrix[i][j] = j;
-            } else if (j === 0) {
-                matrix[i][j] = i;
-            } else {
-                let cost = 0;
-                if (s1[i - 1] !== s2[j - 1]) {
-                    cost = 1;
-                }
-                const temp = matrix[i - 1][j - 1] + cost;
-                matrix[i][j] = Math.min(matrix[i - 1][j] + 1, matrix[i][j - 1] + 1, temp)
-            }
-        }
+  static init(rows, cols){
+    const distance = new Array(rows);
+    for(let i = 0; i < rows; i++){
+      distance[i] = new Array(cols);
     }
-    return matrix[len1][len2];
+
+    let l = Math.max(rows, cols);
+    while(l--){
+      rows - 1 >= l && (distance[l][0] = l);
+      cols - 1 >= l && (distance[0][l] = l);
+    }
+    return distance;
+  }
+
+  static getDistance(str1, str2){
+    let i = 0;
+    let j = 0;
+    let temp = 0;
+    const distance = this.init(str1.length+1, str2.length+1);
+    while(i++ < str1.length){
+      j = 0;
+      while(j++ < str2.length){
+        temp = str1.charAt(i-1) === str2.charAt(j-1) ? 0 : 1;
+        distance[i][j] = Math.min(
+            distance[i-1][j] + 1,
+            distance[i][j-1] + 1,
+            distance[i-1][j-1] + temp);
+      }
+    }
+    return distance[i-1][j-1];
+  }
 }
 
 /**
  * 邮箱正确后缀建议
  */
 module.exports = class EmailSuggestion {
-    constructor(suggestedSuffixes = []) {
-        this.suggestedSuffixes = suggestedSuffixes;
-    }
 
-    /**
-     * 根据输入的邮箱，建议可能正确的邮箱
-     * @param {string} email
-     *
-     * @returns {array} 所有建议的邮箱
-     */
-    suggest(email) {
-        const emailUser = email.substr(0, email.indexOf('@'));
+  constructor(suggestedSuffixes = []) {
+    this.suggestedSuffixes = suggestedSuffixes;
+    this.maxDistance = 5;
+  }
 
-        let suggestArr = [];
-        this.suggestedSuffixes.map(emailServer => {
-            const suggestEmail = [emailUser, "@", emailServer].join("");
-            suggestArr.push({
-                email: suggestEmail,
-                similarity: getEmailSimilarity(email, suggestEmail),
-            });
-            return true;
-        });
+  /**
+   * 根据输入的邮箱，建议可能正确的邮箱
+   * @param {string} email
+   *
+   * @returns {array} 所有建议的邮箱
+   */
+  suggest(email) {
+    const [name, suffix] = email.split('@');
+    const distance = this.suggestedSuffixes.map(value => ({
+      'key': value,
+      'weight': Levenshtein.getDistance(value, suffix)
+    }));
 
-        suggestArr = suggestArr.sort((item1, item2) => item1.similarity - item2.similarity);
-
-        return suggestArr.map(e => e.email);
-    }
+    return distance
+        .sort((a, b) => a.weight- b.weight)
+        .filter(value => value.weight <= this.maxDistance)
+        .map(value => `${name}@${value.key}`);
+  }
 }

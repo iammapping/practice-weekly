@@ -28,7 +28,9 @@
     "mocha": "^6.1.4",
     "sinon": "^7.3.2"
   },
-  "dependencies": {},
+  "dependencies": {
+    "react-transition-group": "^4.2.1"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "npm run lint && npm test"
