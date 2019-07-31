@@ -13,7 +13,7 @@ class Heap {
     return this.size;
   }
 
-  getMin() {
+  getRoot() {
     return this.elements[1];
   }
 
@@ -38,8 +38,8 @@ class Heap {
     this.elements[i] = element;
   }
 
-  deleteMin() {
-    const minElement = this.getMin();
+  deleteRoot() {
+    const minElement = this.getRoot();
     const lastElement = this.getLast();
 
     let childIndex = 0;
@@ -107,14 +107,14 @@ module.exports = class PriorityQueue {
    * @return {any}
    */
   dequeue() {
-    return this.heap.deleteMin();
+    return this.heap.deleteRoot();
   }
 
   /**
    * 获取队列最优先的值
    */
   peek() {
-    return this.heap.getMin();
+    return this.heap.getRoot();
   }
 
   /**
