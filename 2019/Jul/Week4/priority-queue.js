@@ -26,19 +26,26 @@ module.exports = class PriorityQueue {
    * @param {any} value
    */
   queue(value) {
-    const self = this;
     let queueIndex = 0;
+    let low = 0;
+    let high = this.queueArr.length - 1;
 
-    for(let i = 0; i < this.queueArr.length; i += 1) {
-      const queueValue = this.queueArr[i];
-      if(self.options.comparator(queueValue, value) <= 0) {
-        queueIndex = i + 1;
+    while (low <= high) {
+      queueIndex = Math.floor((low + high) / 2);
+
+      if (this.options.comparator(this.queueArr[queueIndex], value) <= 0) {
+        low = queueIndex + 1;
       } else {
+        high = queueIndex - 1;
+      }
+
+      if(high - low <= 1) {
+        queueIndex = low + 1;
         break;
       }
     }
 
-    self.queueArr.splice(queueIndex, 0, value);
+    this.queueArr.splice(queueIndex, 0, value);
   }
 
   /**
