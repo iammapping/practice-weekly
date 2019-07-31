@@ -13,6 +13,7 @@ module.exports = class PriorityQueue {
       // 队列元素的优先级比对方法
       comparator: (a, b) => b - a,
     }, options);
+    this.values = [].concat(this.options.initValues)
     this.sort();
   }
 
@@ -21,7 +22,7 @@ module.exports = class PriorityQueue {
    * @readonly
    */
   get length() {
-    return this.options.initValues.length
+    return this.values.length
   }
 
   /**
@@ -29,7 +30,7 @@ module.exports = class PriorityQueue {
    * @param {any} value
    */
   queue(value) {
-    this.options.initValues.push(value)
+    this.values.push(value)
     this.sort()
   }
 
@@ -41,7 +42,7 @@ module.exports = class PriorityQueue {
     if (this.length === 0) {
       return undefined
     }
-    return this.options.initValues.shift()
+    return this.values.pop()
   }
 
   /**
@@ -51,23 +52,26 @@ module.exports = class PriorityQueue {
     if (this.length === 0) {
       return undefined
     }
-    return this.options.initValues[0]
+    return this.values[this.length - 1]
   }
 
   /**
    * 清空队列
    */
   clear() {
-    this.options.initValues = []
+    this.values = []
   }
 
+  /**
+   * 按需要的顺序，反转排序
+   */
   sort() {
     const len = this.length
     if (len === 0) return
 
     const c = this.options.comparator
-    const start = this.countRunAndMakeAscending(this.options.initValues, 0, len, c)
-    this.binarySort(this.options.initValues, 0, len, start, c)
+    const start = this.countRunAndMakeAscending(this.values, 0, len, c)
+    this.binarySort(this.values, 0, len, start, c)
   }
 
   countRunAndMakeAscending(a, lo, hi, comparator) {
@@ -76,12 +80,12 @@ module.exports = class PriorityQueue {
       if (runHi === hi)
         return 1;
 
-      if (comparator(a[lo], a[runHi++]) < 0) { // Descending
-        while (runHi < hi && comparator(a[runHi - 1], a[runHi]) < 0)
+      if (comparator(a[lo], a[runHi++]) > 0) { // Descending
+        while (runHi < hi && comparator(a[runHi - 1], a[runHi]) > 0)
           runHi++;
           this.reverseRange(a, lo, runHi);
       } else {                              // Ascending
-        while (runHi < hi && comparator(a[runHi - 1], a[runHi]) >= 0)
+        while (runHi < hi && comparator(a[runHi - 1], a[runHi]) <= 0)
           runHi++;
       }
 
@@ -113,7 +117,7 @@ module.exports = class PriorityQueue {
           while (left < right) {
             // eslint-disable-next-line no-bitwise
             const mid = (left + right) >>> 1;
-            if (comparator(a[mid], pivot) < 0)
+            if (comparator(a[mid], pivot) > 0)
               right = mid;
             else
               left = mid + 1;
