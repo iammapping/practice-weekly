@@ -23,6 +23,10 @@ describe('2019 Jul Week4 Test: priority-queue', () => {
     queue.queue(1);
     queue.queue(2);
     queue.queue(3);
+    // queue.queue(3);
+    // queue.queue(6);
+    // queue.queue(4)
+
 
     expect(queue.length).to.be.equal(3);
     expect(queue.dequeue()).to.be.equal(3);

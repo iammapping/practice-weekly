@@ -9,6 +9,8 @@ module.exports = class PriorityQueue {
       // 队列元素的优先级比对方法
       comparator: (a, b) => b - a,
     }, options);
+
+    this.queueArray = this.options.initValues.sort(this.options.comparator);
   }
 
   /**
@@ -16,7 +18,7 @@ module.exports = class PriorityQueue {
    * @readonly
    */
   get length() {
-
+    return this.queueArray.length;
   }
 
   /**
@@ -24,7 +26,18 @@ module.exports = class PriorityQueue {
    * @param {any} value
    */
   queue(value) {
-
+    if (this.queueArray.length !== 0) {
+      let index = 0;
+      for (let i = 0; i < this.queueArray.length; i++) {
+        const comparator = this.options.comparator(this.queueArray[i],value);
+        if (comparator < 0) {
+          index = i+1;
+        }
+      }
+      this.queueArray.splice(index, 0, value);
+    } else {
+      this.queueArray.push(value);
+    }
   }
 
   /**
@@ -32,20 +45,21 @@ module.exports = class PriorityQueue {
    * @return {any}
    */
   dequeue() {
-;
+    return this.queueArray.pop();
   }
 
   /**
    * 获取队列最优先的值
    */
   peek() {
-
+    const queue = this.queueArray;
+    return queue[queue.length-1];
   }
 
   /**
    * 清空队列
    */
   clear() {
-
+    this.queueArray.length = 0;
   }
 };

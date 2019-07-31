@@ -101,10 +101,5 @@ module.exports = class EmailSuggestion {
     const suggestedEmails = new Map([...emailsMap.entries()].sort());
 
     return [ ...suggestedEmails.values() ];
-
-    return distance
-        .sort((a, b) => a.weight- b.weight)
-        .filter(value => value.weight <= this.maxDistance)
-        .map(value => `${name}@${value.key}`);
   }
 };
