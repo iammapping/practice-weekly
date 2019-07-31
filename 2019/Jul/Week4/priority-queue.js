@@ -35,13 +35,14 @@ module.exports = class PriorityQueue {
 
       if (this.options.comparator(this.queueArr[queueIndex], value) <= 0) {
         low = queueIndex + 1;
+        if(low > high) {
+          queueIndex = low;
+        }
       } else {
         high = queueIndex - 1;
-      }
-
-      if(high - low <= 1) {
-        queueIndex = low + 1;
-        break;
+        if(low > high) {
+          queueIndex = high;
+        }
       }
     }
 
