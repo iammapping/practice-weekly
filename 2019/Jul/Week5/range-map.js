@@ -1,7 +1,8 @@
+/* eslint-disable compat/compat */
 const ShouldBeType = {
-  start: 'start',
-  end: 'end',
-  none: 'none'
+  start: Symbol('start'),
+  end: Symbol('end'),
+  none: Symbol('none')
 }
 
 class Range {
