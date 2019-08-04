@@ -10,11 +10,7 @@ module.exports = class PriorityQueue {
       comparator: (a, b) => b - a,
     }, options);
 
-    this.sortData = [];
-
-    this.options.initValues.forEach(v => {
-      this.queue(v);
-    });
+    this.queueArr = this.options.initValues.sort(this.options.comparator);
   }
 
   /**
@@ -22,7 +18,7 @@ module.exports = class PriorityQueue {
    * @readonly
    */
   get length() {
-    return this.sortData.length;
+    return this.queueArr.length;
   }
 
   /**
@@ -30,15 +26,27 @@ module.exports = class PriorityQueue {
    * @param {any} value
    */
   queue(value) {
-    let fromIndex = 0;
+    let queueIndex = 0;
+    let low = 0;
+    let high = this.queueArr.length - 1;
 
-    for (let i = 0; i < this.sortData.length; i++) {
-      if (this.options.comparator(value, this.sortData[i]) > 0) {
-        fromIndex = i + 1;
+    while (low <= high) {
+      queueIndex = Math.floor((low + high) / 2);
+
+      if (this.options.comparator(this.queueArr[queueIndex], value) <= 0) {
+        low = queueIndex + 1;
+        if(low > high) {
+          queueIndex = low;
+        }
+      } else {
+        high = queueIndex - 1;
+        if(low > high) {
+          queueIndex = high;
+        }
       }
     }
 
-    this.sortData.splice(fromIndex, 0, value);
+    this.queueArr.splice(queueIndex, 0, value);
   }
 
   /**
@@ -46,22 +54,20 @@ module.exports = class PriorityQueue {
    * @return {any}
    */
   dequeue() {
-    return this.sortData.pop();
+    return this.queueArr.pop();
   }
 
   /**
    * 获取队列最优先的值
    */
   peek() {
-    if (this.sortData.length === 0) return null;
-
-    return this.sortData[this.length - 1];
+    return this.queueArr[this.queueArr.length - 1];
   }
 
   /**
    * 清空队列
    */
   clear() {
-    this.sortData = [];
+    this.queueArr = [];
   }
 };
