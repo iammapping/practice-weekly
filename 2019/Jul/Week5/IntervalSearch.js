@@ -10,9 +10,13 @@
  * 情况二：要查找的数没有通过二分查找找到
  *      通过二分查找的过程，我们可以得到被查找这个数在intervalKeyMap中哪两个数之间，根据intervalKeyMap的性质，判断这个数是否在给定的某个范围之间
  */
-class IntervalSearch{
+
+const Searcher = require('./Searcher.js');
+
+class IntervalSearch extends Searcher{
 
     constructor(){
+        super();
         this.intervalValueMap = [];
         this.intervalKeyMap = [];
     }

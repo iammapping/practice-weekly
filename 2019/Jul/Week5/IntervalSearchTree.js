@@ -1,3 +1,5 @@
+const Searcher = require('./Searcher.js');
+
 function Node(min , max, value){
     this.leftLimit = min;
     this.rightLimit = max;
@@ -6,9 +8,10 @@ function Node(min , max, value){
     this.right = null;
 }
 
-class IntervalSearchTree{
+class IntervalSearchTree extends Searcher{
 
     constructor(){
+        super();
         this.root = null;
     }
 
@@ -28,6 +31,10 @@ class IntervalSearchTree{
     display(){
         // eslint-disable-next-line no-console
         console.log(this.root);
+    }
+
+    clear(){
+        this.root = null;
     }
 
     static insert(min, max, value, root){
@@ -101,7 +108,7 @@ class IntervalSearchTree{
 
     static find(target, root){
         if(root === null){
-            return null;
+            return {};
         }
         if(target < root.leftLimit){
             return IntervalSearchTree.find(target, root.left)
