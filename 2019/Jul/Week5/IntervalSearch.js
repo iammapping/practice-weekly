@@ -25,10 +25,6 @@ class IntervalSearch extends Searcher{
         return low % 2 === 0 && high % 2 !== 0;
     }
 
-    static notInInterval(low, high){
-        return low % 2 !== 0 && high % 2 === 0;
-    }
-
     binarySearch(target){
         let low = 0;
         let high = this.intervalKeyMap.length - 1;
@@ -49,10 +45,16 @@ class IntervalSearch extends Searcher{
 
     search(target){
         let [low, high] = this.binarySearch(target);
-        if(IntervalSearch.notInInterval(low, high)){
+        if(!IntervalSearch.inInterval(low, high)){
             return {};
         }
-        low === high && (low % 2 === 0 ? high += 1 : low -= 1);
+        if(low === high){
+            if(low % 2 === 0){
+                high += 1;
+            }else{
+                low -= 1;
+            }
+        }
         return {
             interval: [this.intervalKeyMap[low], this.intervalKeyMap[high]],
             value: this.intervalValueMap[low/2]
@@ -69,7 +71,7 @@ class IntervalSearch extends Searcher{
         for(let i = 0; i < this.intervalKeyMap.length; i++){
             // 设min = 7 min存在到位置在区间范围之中
             // 当下标i移动到3时，将min插入到tmpKey， 变成[3, 5] [7, 8] [11
-            if(i === minHigh && IntervalSearch.notInInterval(minLow, minHigh)){
+            if(i === minHigh && !IntervalSearch.inInterval(minLow, minHigh)){
                 tmpKey.push(min);
             }
             // 设min = 4 min存在到位置在区间范围之中
@@ -80,7 +82,7 @@ class IntervalSearch extends Searcher{
                 tmpValue.push(this.intervalValueMap[(i-1)/2]);
             }
             // max和min插入到原理相同
-            if(i === maxHigh && IntervalSearch.notInInterval(maxLow, maxHigh)){
+            if(i === maxHigh && !IntervalSearch.inInterval(maxLow, maxHigh)){
                 tmpKey.push(max);
                 tmpValue.push(value);
             }
