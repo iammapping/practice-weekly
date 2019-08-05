@@ -9,41 +9,43 @@ module.exports = class RangeMap {
    */
 
   constructor () {
-    this.rangeData = [null];
-  }
-
-  resetRange(start, end, value) {
-    for (let i = start; i <= end; i++) {
-      this.rangeData[i] = value;
-    }
+    this.rangeData = [];
   }
 
   add(range, value) {
     const rangeMin = range[0];
     const rangeMax = range[1];
 
-    if (this.rangeData[rangeMin]) {
-      const rangeItem = this.rangeData[rangeMin];
+    for (let i = 0; i < this.rangeData.length; i++) {
+      const rangeItem = this.rangeData[i];
 
-      if (rangeItem.ran[0] < rangeMin) {
-        this.resetRange(rangeItem.ran[0], rangeMin - 1, {ran: [rangeItem.ran[0], rangeMin - 1], val: rangeItem.val});
+      if (rangeItem.ran[1] < rangeMin) continue;
+
+      if (rangeMin <= rangeItem.ran[0] && rangeMax >= rangeItem.ran[1]) {
+        rangeItem.deleted = true;
+        continue;
+      }
+
+      if (rangeMin <= rangeItem.ran[0] && rangeMax < rangeItem.ran[1]) {
+        this.rangeData[i] = {ran: [rangeMax + 1, rangeItem.ran[1]], val: rangeItem.val};
+        continue;
+      }
+
+      if (rangeMin > rangeItem.ran[0] && rangeMax > rangeItem.ran[1]) {
+        this.rangeData[i] = {ran: [rangeItem.ran[0], rangeMin - 1], val: rangeItem.val};
+        continue;
+      }
+
+      if (rangeMin > rangeItem.ran[0] && rangeMax < rangeItem.ran[1]) {
+        this.rangeData[i] = {ran: [rangeItem.ran[0], rangeMin - 1], val: rangeItem.val};
+        this.rangeData.push({ran: [rangeMax + 1, rangeItem.ran[1]], val: rangeItem.val});
+        break;
       }
     }
 
-    if (this.rangeData[rangeMax]) {
-      const rangeItem = this.rangeData[rangeMax];
-      if (rangeItem.ran[1] > rangeMax) {
-        this.resetRange(rangeMax + 1, rangeItem.ran[1], {ran: [rangeMax + 1, rangeItem.ran[1]], val: rangeItem.val});
-      }
-    }
-
-    for (let i = rangeMin; i <= rangeMax; i++) {
-      this.rangeData[i] = {
-        ran: range,
-        val: value
-      };
-    } 
-  }
+    this.rangeData.push({ran: range, val: value});
+    this.rangeData = this.rangeData.filter(rangeItem => !rangeItem.deleted);
+}
 
   /**
    * 查找命中的区间
@@ -51,9 +53,9 @@ module.exports = class RangeMap {
    * @returns {array<number>}
    */
   findRange(search) {
-    if (this.rangeData[search]) {
-        return this.rangeData[search].ran;
-    }
+    const ri = this.rangeData.find(rangeItem => search >= rangeItem.ran[0] && search <= rangeItem.ran[1]);
+
+    if (ri) return ri.ran;
 
     return undefined;
   }
@@ -64,9 +66,9 @@ module.exports = class RangeMap {
    * @returns {any}
    */
   findValue(search) {
-    if (this.rangeData[search]) {
-        return this.rangeData[search].val;
-    }
+    const ri = this.rangeData.find(rangeItem => search >= rangeItem.ran[0] && search <= rangeItem.ran[1]);
+    
+    if (ri) return ri.val;
 
     return undefined;
   }
@@ -75,6 +77,6 @@ module.exports = class RangeMap {
    * 清空 Map
    */
   clear() {
-    this.rangeData = [null];
+    this.rangeData = [];
   }
 };
