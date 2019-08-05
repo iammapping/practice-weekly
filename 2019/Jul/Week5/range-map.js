@@ -15,7 +15,7 @@ module.exports = class RangeMap {
    */
   add(range, value) {
     this.searcher.add(range, value);
-    this.searcher.display();
+    // this.searcher.display();
   }
 
   /**

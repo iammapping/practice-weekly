@@ -1,33 +1,23 @@
 class Searcher{
 
     constructor(){
-        this.map = [];
+        this.error = "Did not implement this method";
     }
 
     add(range, value){
-        this.map.push({
-            range,
-            value
-        })
+        throw new Error(this.error);
     }
 
     search(target){
-        for(let i = 0; i < this.map.length; i++){
-            const [min, max] = this.map[i].range;
-            if(min <= target && target <= max){
-                return this.map[i];
-            }
-        }
-        return {};
+        throw new Error(this.error);
     }
 
     display(){
-        // eslint-disable-next-line no-console
-        console.log(this.map);
+        throw new Error(this.error);
     }
 
     clear(){
-        this.map = null;
+        throw new Error(this.error);
     }
 }
 
