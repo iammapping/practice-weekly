@@ -45,8 +45,18 @@ class SortedRangeLink {
         if (!hasAddRangeNode) {
           rangeNode.preNode = node.preNode;
           rangeNode.nextNode = node.nextNode;
-          node.preNode.nextNode = rangeNode;
-          node.nextNode.preNode = rangeNode;
+
+          if(node.preNode) {
+            node.preNode.nextNode = rangeNode;
+          }
+          if(node.nextNode) {
+            node.nextNode.preNode = rangeNode;
+          }
+
+          if(!node.preNode) {
+            this.firstNode = rangeNode;
+          }
+          
           hasAddRangeNode = true;
         } else {
           node.preNode.nextNode = node.nextNode;
