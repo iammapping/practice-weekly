@@ -33,7 +33,6 @@ module.exports = class RangeMap {
           const key = it.next().value;
 
           if (range[index] >= key[index] && range[range.length - 1] <= key[key.length - 1]) {
-
             this.map.set(range, value);
             if (range[index] === key[index]) {
               this.map.set([key[index], key[index]], this.map.get(key));
@@ -73,7 +72,6 @@ module.exports = class RangeMap {
       this.start = range[index];
       this.end = range[range.length - 1];
     }
-
   }
 
 
