@@ -50,6 +50,14 @@ function doInsert(node, newNode) {
     return newNode;
   }
 
+  if (isSubsetOfRange(newNode, node)) {
+    node.low = newNode.low;
+    node.high = newNode.high;
+    node.value = newNode.value;
+    node.max = node.high;
+    return node;
+  }
+
   if (isIntersectionOfRange(node, newNode)) {
     const { low, high, value: oldValue } = node;
     const { high: newHigh, value } = newNode;
