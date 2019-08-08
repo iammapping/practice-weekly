@@ -7,6 +7,8 @@ module.exports = class ConnectionDetector {
       // 节点用于索引的属性，默认为节点本身
       identify: o => o
     }, options);
+
+    this.nodeMap = {};
   }
 
   /**
@@ -17,8 +19,17 @@ module.exports = class ConnectionDetector {
     if (nodes.length < 2) {
       throw new Error('You should provide at least two nodes each time.');
     }
+    nodes = nodes.map(node => this.options.identify(node));
+    let foundSet = null;
+    for(let i = 0; i < nodes.length; i++) {
+      if(this.nodeMap[nodes[i]] !== undefined) {
+        foundSet = this.nodeMap[nodes[i]].set;
+        break;
+      }
+    }
 
-
+    foundSet = new Set([...(foundSet || []), ...nodes]);
+    foundSet.forEach(node => {this.nodeMap[node] = { value: node, set: foundSet }});
   }
 
   /**
@@ -27,6 +38,8 @@ module.exports = class ConnectionDetector {
    * @param {any} nodeB
    */
   isConntectedTo(nodeA, nodeB) {
-
+    return this.nodeMap[this.options.identify(nodeA)] !== undefined
+      && this.nodeMap[this.options.identify(nodeB)] !== undefined
+      && this.nodeMap[this.options.identify(nodeA)].set === this.nodeMap[this.options.identify(nodeB)].set;
   }
 }
