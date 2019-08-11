@@ -38,6 +38,28 @@ describe('2019 Aug Week2 Test: connection-detector', () => {
     expect(cd.isConntectedTo(3, 7)).to.be.false;
   });
 
+  it('add nodes reconnected', () => {
+    const cd = new ConnectionDetector();
+    cd.addConnectedNodes(1, 2, 3);
+    expect(cd.isConntectedTo(1, 2)).to.be.true;
+    expect(cd.isConntectedTo(1, 3)).to.be.true;
+    expect(cd.isConntectedTo(2, 3)).to.be.true;
+
+    cd.addConnectedNodes(4, 5);
+    expect(cd.isConntectedTo(4, 5)).to.be.true;
+    expect(cd.isConntectedTo(1, 4)).to.be.false;
+    expect(cd.isConntectedTo(1, 5)).to.be.false;
+    expect(cd.isConntectedTo(3, 5)).to.be.false;
+
+    cd.addConnectedNodes(3, 4);
+    expect(cd.isConntectedTo(3, 4)).to.be.true;
+    expect(cd.isConntectedTo(4, 5)).to.be.true;
+    expect(cd.isConntectedTo(1, 4)).to.be.true;
+    expect(cd.isConntectedTo(1, 5)).to.be.true;
+    expect(cd.isConntectedTo(3, 5)).to.be.true;
+    expect(cd.isConntectedTo(2, 5)).to.be.true;
+  });
+
   it('add object node with identify', () => {
     const cd = new ConnectionDetector({
       identify: o => o.id
