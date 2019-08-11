@@ -1,13 +1,13 @@
 language: node_js
 node_js:
   - "10"
+before_install:
+  - npm i -g npm
 install:
-  - npm i npminstall && npminstall
+  - npm install
 script:
   - npm run lint
   - npm test
-cache:
-  directories:
-    - node_modules
+cache: npm
 notifications:
   email: false
