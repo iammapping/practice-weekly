@@ -20,12 +20,14 @@ module.exports = class ConnectionDetector {
       throw new Error('You should provide at least two nodes each time.');
     }
     // 使用第一个节点所在到组名作为其他节点所在到组名
-    const root = this.search(nodes[0]);
+    const rootIdentify = this.search(nodes[0]);
     for(let i = 1; i < nodes.length; i++){
-      if( root !== this.search(nodes[i]) ){
-        this.connectionRelationMap.set(this.search(nodes[i]), root);
+      const nodeIRootIdentify = this.search(nodes[i]);
+      if( rootIdentify !==  nodeIRootIdentify){
+        this.connectionRelationMap.set(nodeIRootIdentify, rootIdentify);
       }
     }
+    console.log(this.connectionRelationMap);
   }
 
   search(root) {
@@ -41,9 +43,9 @@ module.exports = class ConnectionDetector {
     }
     // 重新调整
     while(sonIdentify !== rootIdentify) {
-      const tmp = this.connectionRelationMap.get(sonIdentify);
+      const tmpIdentify = this.connectionRelationMap.get(sonIdentify);
       this.connectionRelationMap.set(sonIdentify, rootIdentify);
-      sonIdentify = tmp;
+      sonIdentify = tmpIdentify;
     }
     return rootIdentify;
   }
