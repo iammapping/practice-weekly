@@ -42,4 +42,15 @@ describe('2019 Jul Week5 Test: range-map', () => {
     expect(map.findRange(6)).to.be.eql([6, 7]);
     expect(map.findValue(6)).to.be.equal('yyy');
   });
+
+  it('add a greater range', () => {
+    const map = new RangeMap();
+    map.add([2, 3], 'xxx');
+    expect(map.findRange(2)).to.be.eql([2, 3]);
+    map.add([1, 5], 'yyy');
+    expect(map.findRange(2)).to.be.eql([1, 5]);
+    expect(map.findValue(2)).to.be.equal('yyy');
+    expect(map.findRange(4)).to.be.eql([1, 5]);
+    expect(map.findValue(4)).to.be.equal('yyy');
+  });
 });
