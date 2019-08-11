@@ -27,7 +27,6 @@ module.exports = class ConnectionDetector {
         this.connectionRelationMap.set(nodeIRootIdentify, rootIdentify);
       }
     }
-    console.log(this.connectionRelationMap);
   }
 
   search(root) {
