@@ -1,3 +1,13 @@
+function mergeNodes(arrA, arrB) {
+  arrB.forEach(id => {
+    if (!arrA.includes(id)) {
+      arrA.push(id);
+    }
+  });
+
+  return arrA;
+}
+
 /**
  * 联通性检测
  */
@@ -25,23 +35,22 @@ module.exports = class ConnectionDetector {
       identifyIDs.push(this.options.identify(node));
     });
 
-    let isInclude = false;
+    let newIDs = [].concat(identifyIDs);
     const identifySet = new Set(identifyIDs);
     for (let i = 0; i < this.nodeData.length; i++) {
       const nodeDataSet = new Set(this.nodeData[i].identifyIDs);
 
       if ((new Set([...nodeDataSet].filter(id => identifySet.has(id)))).size) {
-        this.nodeData[i].identifyIDs = this.nodeData[i].identifyIDs.concat(identifyIDs);
-        isInclude = true;
-        break;
+        this.nodeData[i].isDelete = true;
+        newIDs = mergeNodes(newIDs, this.nodeData[i].identifyIDs);
       }
     }
 
-    if (!isInclude) {
-      this.nodeData.push({
-        'identifyIDs': identifyIDs
-      });
-    }
+    this.nodeData.push({
+      'identifyIDs': newIDs
+    });
+
+    this.nodeData = this.nodeData.filter(node => !node.isDelete);
   }
 
   /**
