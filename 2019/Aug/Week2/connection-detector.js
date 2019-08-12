@@ -8,7 +8,7 @@ module.exports = class ConnectionDetector {
       identify: o => o
     }, options);
 
-    this.treeBoj = {};
+    this.treeObj = {};
   }
 
   /**
@@ -20,15 +20,12 @@ module.exports = class ConnectionDetector {
       throw new Error('You should provide at least two nodes each time.');
     }
 
-    [...nodes].forEach((node, index) => {
+    const firstNodeKey = this.options.identify([...nodes][0]);
+    const pathKey = this.treeObj[firstNodeKey] || firstNodeKey;
+
+    [...nodes].forEach(node => {
       const key = this.options.identify(node);
-      const nextKey = [...nodes][index + 1] && this.options.identify([...nodes][index + 1]);
-
-      this.treeBoj[key] = this.treeBoj[key] || {};
-
-      if(nextKey) {
-        this.addNextKey(key, nextKey);
-      }
+      this.treeObj[key] = this.treeObj[key] || pathKey;
     })
   }
 
@@ -38,30 +35,6 @@ module.exports = class ConnectionDetector {
    * @param {any} nodeB
    */
   isConntectedTo(nodeA, nodeB) {
-    return this.searchNodeKey(this.options.identify(nodeA), this.options.identify(nodeB));
-  }
-
-  searchNodeKey(currentKey, searchKey) {
-    if (!this.treeBoj[currentKey]) {
-      return false;
-    }
-
-    if (this.treeBoj[currentKey].next) {
-      if (this.treeBoj[currentKey].next === searchKey) {
-        return true;
-      }
-
-      return this.searchNodeKey(this.treeBoj[currentKey].next, searchKey);
-    }
-
-    return false;
-  }
-
-  addNextKey(currentKey, addKey) {
-    if (this.treeBoj[currentKey].next) {
-      this.addNextKey(this.treeBoj[currentKey].next, addKey);
-    } else {
-      this.treeBoj[currentKey].next = addKey;
-    }
+    return this.treeObj[this.options.identify(nodeA)] === this.treeObj[this.options.identify(nodeB)]
   }
 }
