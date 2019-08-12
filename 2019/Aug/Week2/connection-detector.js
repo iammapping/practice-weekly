@@ -20,10 +20,10 @@ module.exports = class ConnectionDetector {
       throw new Error('You should provide at least two nodes each time.');
     }
 
-    const firstNodeKey = this.options.identify([...nodes][0]);
+    const firstNodeKey = this.options.identify(nodes[0]);
     const pathKey = this.treeObj[firstNodeKey] || firstNodeKey;
 
-    [...nodes].forEach(node => {
+    nodes.forEach(node => {
       const key = this.options.identify(node);
       this.treeObj[key] = this.treeObj[key] || pathKey;
     })
