@@ -41,13 +41,16 @@ module.exports = class ConnectionDetector {
       }
 
       if (this.connMap[id] !== firstId) {
-        this.unionMap[firstId].forEach(uid => {
-          this.connMap[uid] = this.connMap[id];
-          this.unionMap[this.connMap[id]].push(uid);
+        const combineId = this.unionMap[firstId].length <= this.unionMap[this.connMap[id]].length ? firstId : this.connMap[id];
+        const combineToId = this.unionMap[firstId].length <= this.unionMap[this.connMap[id]].length ? this.connMap[id] : firstId;
+
+        this.unionMap[combineId].forEach(uid => {
+          this.connMap[uid] = combineToId;
+          this.unionMap[combineToId].push(uid);
         });
 
-        delete this.unionMap[firstId];
-        firstId = this.connMap[id];
+        delete this.unionMap[combineId];
+        firstId = combineToId;
       }
     });
   }
