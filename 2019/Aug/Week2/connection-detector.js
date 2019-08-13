@@ -20,16 +20,12 @@ module.exports = class ConnectionDetector {
       throw new Error('You should provide at least two nodes each time.');
     }
     nodes = nodes.map(node => this.options.identify(node));
-    let foundSet = [];
-    let isFoundSet = false;
-    for(let i = 0; i < nodes.length; i++) {
-      if(this.nodeMap[nodes[i]] !== undefined) {
-        isFoundSet = true;
-        foundSet = new Set([...foundSet, ...this.nodeMap[nodes[i]]]);
-      }
-    }
-    foundSet = new Set([...foundSet, ...nodes]);
-    foundSet.forEach(node => {this.nodeMap[node] = foundSet});
+    const set = new Set();
+    nodes.forEach(node => {
+      (this.nodeMap[node] || []).forEach( e => set.add(e));
+      set.add(node);
+    });
+    set.forEach(node => {this.nodeMap[node] = set});
   }
 
   /**
@@ -38,7 +34,6 @@ module.exports = class ConnectionDetector {
    * @param {any} nodeB
    */
   isConntectedTo(nodeA, nodeB) {
-    return this.nodeMap[this.options.identify(nodeA)] !== undefined
-      && this.nodeMap[this.options.identify(nodeA)] === this.nodeMap[this.options.identify(nodeB)];
+    return (this.nodeMap[this.options.identify(nodeA)] || null) === this.nodeMap[this.options.identify(nodeB)];
   }
 }
