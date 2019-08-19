@@ -5,8 +5,7 @@ class Paths {
 
   buildPath(current) {
     this.currentList.push(current);
-    if(this.askedMap[current] === undefined) {
-      this.askedMap[current] = true;
+    if(this.pathMap[current] === undefined) {
       this.pathMap[current] = this.currentList.map(e => e);
       (this.nodeMap[current] || []).forEach(value => this.buildPath(value));
     }
@@ -20,7 +19,6 @@ class Paths {
    */
   constructor(graph, source) {
     this.pathMap = {};
-    this.askedMap = {};
     this.currentList = [];
     this.nodeMap = graph.nodeMap;
 
@@ -45,7 +43,7 @@ class Paths {
  * 图类
  */
 class Graph {
-  linkPoint(nodePairs){
+  linkNode(nodePairs){
     const [value1, value2] = nodePairs;
     this.nodeMap[value1] = (this.nodeMap[value1] || new Set()).add(value2);
     this.nodeMap[value2] = (this.nodeMap[value2] || new Set()).add(value1);
@@ -57,14 +55,14 @@ class Graph {
    */
   constructor(nodePairs) {
     this.nodeMap = {};
-    nodePairs.forEach(nodePair => this.linkPoint(nodePair));
+    nodePairs.forEach(nodePair => this.linkNode(nodePair));
   }
 
   /**
    * @param {[node1, node2]} nodePair 连通的节点对
    */
   addNodePair(nodePair) {
-    this.linkPoint(nodePair);
+    this.linkNode(nodePair);
   }
 
   /**
