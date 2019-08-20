@@ -17,7 +17,7 @@ class Paths {
   buildPath(path, current) {
     if(path.indexOf(current) > -1) return;
     path.push(current);
-    if((this.pathMap[current] || []) < path.length) {
+    if((this.pathMap[current] || []).length < path.length) {
       this.pathMap[current] = path.map(e => e);
       (this.nodeMap[current] || []).forEach(value => this.buildPath(path, value));
     }
