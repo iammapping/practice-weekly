@@ -1,13 +1,3 @@
-function mergeNodes(arrA, arrB) {
-  arrB.forEach(id => {
-    if (!arrA.includes(id)) {
-      arrA.push(id);
-    }
-  });
-
-  return arrA;
-}
-
 /**
  * 联通性检测
  */
@@ -18,7 +8,8 @@ module.exports = class ConnectionDetector {
       identify: o => o
     }, options);
 
-    this.nodeData = [];
+    this.connMap = {};
+    this.unionMap = {};
   }
 
   /**
@@ -30,27 +21,38 @@ module.exports = class ConnectionDetector {
       throw new Error('You should provide at least two nodes each time.');
     }
 
-    const identifyIDs = [];
+    let firstId = null;
+
     nodes.forEach(node => {
-      identifyIDs.push(this.options.identify(node));
-    });
+      const id = this.options.identify(node);
 
-    let newIDs = [].concat(identifyIDs);
-    const identifySet = new Set(identifyIDs);
-    for (let i = 0; i < this.nodeData.length; i++) {
-      const nodeDataSet = new Set(this.nodeData[i].identifyIDs);
+      if (this.connMap[id] === undefined) {
+        this.connMap[id] = (firstId === null ? id : firstId);
 
-      if ((new Set([...nodeDataSet].filter(id => identifySet.has(id)))).size) {
-        this.nodeData[i].isDelete = true;
-        newIDs = mergeNodes(newIDs, this.nodeData[i].identifyIDs);
+        if (this.unionMap[this.connMap[id]] === undefined) {
+          this.unionMap[this.connMap[id]] = [id];
+        } else {
+          this.unionMap[this.connMap[id]].push(id);
+        }
       }
-    }
 
-    this.nodeData.push({
-      'identifyIDs': newIDs
+      if (firstId === null) {
+        firstId = this.connMap[id];
+      }
+
+      if (this.connMap[id] !== firstId) {
+        const combineId = this.unionMap[firstId].length <= this.unionMap[this.connMap[id]].length ? firstId : this.connMap[id];
+        const combineToId = this.unionMap[firstId].length <= this.unionMap[this.connMap[id]].length ? this.connMap[id] : firstId;
+
+        this.unionMap[combineId].forEach(uid => {
+          this.connMap[uid] = combineToId;
+          this.unionMap[combineToId].push(uid);
+        });
+
+        delete this.unionMap[combineId];
+        firstId = combineToId;
+      }
     });
-
-    this.nodeData = this.nodeData.filter(node => !node.isDelete);
   }
 
   /**
@@ -59,13 +61,8 @@ module.exports = class ConnectionDetector {
    * @param {any} nodeB
    */
   isConntectedTo(nodeA, nodeB) {
-    for (let i = 0; i < this.nodeData.length; i++) {
-      const {identifyIDs} = this.nodeData[i];
-      
-      if (identifyIDs.includes(this.options.identify(nodeA)) && identifyIDs.includes(this.options.identify(nodeB))) {
-        return true;
-      }
-    }
-    return false;
+    const idA = this.options.identify(nodeA);
+    const idB = this.options.identify(nodeB);
+    return this.connMap[idA] !== undefined && this.connMap[idB] !== undefined && this.connMap[idA] === this.connMap[idB];
   }
 }

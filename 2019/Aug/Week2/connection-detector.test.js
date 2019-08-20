@@ -36,6 +36,12 @@ describe('2019 Aug Week2 Test: connection-detector', () => {
 
     expect(cd.isConntectedTo(1, 4)).to.be.false;
     expect(cd.isConntectedTo(3, 7)).to.be.false;
+
+    cd.addConnectedNodes(8, 2, 6, 9);
+    expect(cd.isConntectedTo(3, 4)).to.be.true;
+    expect(cd.isConntectedTo(7, 8)).to.be.true;
+    expect(cd.isConntectedTo(8, 6)).to.be.true;
+    expect(cd.isConntectedTo(8, 9)).to.be.true;
   });
 
   it('add nodes reconnected', () => {
