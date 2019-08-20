@@ -7,14 +7,22 @@ class Graph {
    * @param {Array<[node1, node2]>} nodePairs 初始化的连通节点对
    */
   constructor(nodePairs) {
+    this.pairMap = {};
 
+    nodePairs.forEach(nodePair => {
+      this.addNodePair(nodePair);
+    });
   }
 
   /**
    * @param {[node1, node2]} nodePair 连通的节点对
    */
   addNodePair(nodePair) {
-
+    this.pairMap[nodePair[0]] || (this.pairMap[nodePair[0]] = []);
+    this.pairMap[nodePair[1]] || (this.pairMap[nodePair[1]] = []);
+    
+    this.pairMap[nodePair[0]].push(nodePair[1]);
+    this.pairMap[nodePair[1]].push(nodePair[0]);
   }
 
   /**
@@ -23,7 +31,7 @@ class Graph {
    * @return {Paths}
    */
   search(source) {
-
+    return new Paths(this, source);
   }
 }
 
@@ -38,7 +46,9 @@ class Paths {
    * @param {any} source
    */
   constructor(graph, source) {
-
+    this.pairMap = graph.pairMap;
+    this.source = source;
+    this.pathMap = {};
   }
 
   /**
@@ -47,11 +57,44 @@ class Paths {
    * @returns {boolean}
    */
   hasPathTo(target) {
-
+    return this.pathMap[target] || !!this.pathTo(target);
   }
 
   pathTo(target) {
+    const path = [];
+    const hasSearchNodes = [];
+    const sr = this.searchPath(target, path, hasSearchNodes);
+    if (sr) {
+      this.pathMap[target] = path.reverse();
+    }
+    return sr ? this.pathMap[target] : null;
+  }
 
+  searchPath(node, path, hasSearchNodes) {
+    path.push(node);
+    
+    if (node === this.source) {
+      return true;
+    }
+
+    let sr = false;
+    for (const nextNode of (this.pairMap[node] || [])) {
+      if (hasSearchNodes.includes(nextNode)) {
+        continue;
+      }
+      
+      hasSearchNodes.push(nextNode);
+      sr = this.searchPath(nextNode, path, hasSearchNodes);
+      if (sr) {
+        break; 
+      }
+    }
+
+    if(!sr) {
+      path.pop();
+    }
+
+    return sr;
   }
 }
 
