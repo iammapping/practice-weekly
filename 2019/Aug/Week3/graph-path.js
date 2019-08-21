@@ -21,8 +21,7 @@ class Graph {
     }
     this.createAdjacency(this.Adjacency);
   }
-
-
+  
   init(nodes) {
     // eslint-disable-next-line guard-for-in,no-restricted-syntax
     for(const item in nodes) {
@@ -144,4 +143,3 @@ module.exports = {
   Graph,
   Paths,
 };
-
