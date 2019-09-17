@@ -24,9 +24,9 @@ class Levenshtein {
       while(j++ < str2.length){
         temp = str1.charAt(i-1) === str2.charAt(j-1) ? 0 : 1;
         distance[i][j] = Math.min(
-            distance[i-1][j] + 1,
-            distance[i][j-1] + 1,
-            distance[i-1][j-1] + temp);
+          distance[i-1][j] + 1,
+          distance[i][j-1] + 1,
+          distance[i-1][j-1] + temp);
       }
     }
     return distance[i-1][j-1];
@@ -56,8 +56,8 @@ module.exports = class EmailSuggestion {
     }));
 
     return distance
-        .sort((a, b) => a.weight- b.weight)
-        .filter(value => value.weight <= this.maxDistance)
-        .map(value => `${name}@${value.key}`);
+      .sort((a, b) => a.weight- b.weight)
+      .filter(value => value.weight <= this.maxDistance)
+      .map(value => `${name}@${value.key}`);
   }
 }

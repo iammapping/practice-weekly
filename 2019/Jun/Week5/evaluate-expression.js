@@ -33,8 +33,8 @@ function basicOperation(n1, n2, opt) {
 }
 
 function isNumber(str="") {
-    // [0-9]
-    return str.charCodeAt() >= 48 && str.charCodeAt() <= 57;
+  // [0-9]
+  return str.charCodeAt() >= 48 && str.charCodeAt() <= 57;
 }
 
 

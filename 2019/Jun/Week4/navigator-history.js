@@ -30,7 +30,7 @@ class NavigatorHistory {
       this.currIndex--;
       return this.current();
     }
-    
+
     return undefined;
   }
 
