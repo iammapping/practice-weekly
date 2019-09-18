@@ -10,7 +10,7 @@ module.exports = class ReactiveVariables {
     const proxy = new Proxy(variables, {
       get(target, key, receiver) {
         if (currDependKey !== '') {
-          (dependMap[key] || (dependMap[key] = [])).push(currDependKey);
+          (dependMap[key] || (dependMap[key] = new Set())).add(currDependKey);
         }
 
         if (typeof target[key] === 'function') {
